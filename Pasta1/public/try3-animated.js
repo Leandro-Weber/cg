@@ -59,7 +59,7 @@ function main() {
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
 
   // Set Geometry.
-  setGeometry(gl);
+  setGeometry2(gl);
 
   // tell the position attribute how to pull data out of the current ARRAY_BUFFER
   gl.enableVertexAttribArray(positionLocation);
@@ -179,6 +179,35 @@ function main() {
     var count = 12;
     gl.drawArrays(gl.TRIANGLES, offset, count);
   }
+
+  //ÁREA DE TESTES DE CHERNOBYL ABAIXO, LEITURA NÃO RECOMENDADA PARA PESSOAS SENSÍVEIS
+  setInterval(render, 1660);
+  var control1 = true;
+  var control2 = true;
+  var angleInDegrees = 0;
+  function render() {
+    if (translation[0] >= gl.canvas.width) control1 = true;
+    if (translation[0] <= 0) control1 = false;
+    if (control1) translation[0] = translation[0] - 10;
+    else translation[0] = translation[0] + 10;
+    if (translation[1] >= gl.canvas.height) control2 = true;
+    if (translation[1] <= 0) control2 = false;
+    if (control2) translation[1] = translation[1] - 10;
+    else translation[1] = translation[1] + 10;
+    angleInDegrees += 1;
+    angleInRadians = (angleInDegrees * Math.PI) / 180;
+    setColors(gl);
+    //setColors2(gl, translation[0]);
+    drawScene();
+  }
+
+  // function render() {
+  //   setTimeout(function () {
+  //     translation[index] = ui.value + 10;
+  //     setColors(gl);
+  //     drawScene();
+  //   }, 100);
+  // }
 }
 
 // Fill the buffer with the values that define a rectangle.
@@ -192,9 +221,84 @@ function setGeometry(gl) {
     gl.STATIC_DRAW
   );
 }
+function setGeometry2(gl) {
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      // left column
+      0, 0, 30, 0, 0, 150, 0, 150, 30, 0, 30, 150,
+
+      // top rung
+      30, 120, 100, 120, 100, 150, 30, 150, 100, 150, 30, 120,
+    ]),
+    gl.STATIC_DRAW
+  );
+}
 
 // Fill the buffer with colors for the 2 triangles
 // that make the rectangle.
+function setColors2(gl, n) {
+  n = n % 255;
+  // n = 1.0 / n;
+  var OldRange = 255;
+  var NewRange = 1.0;
+  n = (n * NewRange) / OldRange;
+  console.log(n);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      n,
+      n,
+      Math.random(),
+      1,
+      n,
+      n,
+      n,
+      1,
+      n,
+      n,
+      n,
+      1,
+      n,
+      n,
+      n,
+      1,
+      n,
+      n,
+      n,
+      1,
+      n,
+      n,
+      n,
+      1,
+      n,
+      n,
+      n,
+      1,
+      n,
+      n,
+      n,
+      1,
+      n,
+      n,
+      n,
+      1,
+      0,
+      0,
+      n,
+      1,
+      0,
+      0,
+      n,
+      1,
+      0,
+      0,
+      n,
+      1,
+    ]),
+    gl.STATIC_DRAW
+  );
+}
 function setColors(gl) {
   // Pick 2 random colors.
   gl.bufferData(
