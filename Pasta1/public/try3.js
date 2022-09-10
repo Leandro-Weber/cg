@@ -15,7 +15,7 @@ void main() {
 
   // Copy the color from the attribute to the varying.
   v_color = a_color;
-}
+} 
 `;
 
 var fs = `#version 300 es
@@ -130,6 +130,7 @@ function main() {
   function updatePosition(index) {
     return function (event, ui) {
       translation[index] = ui.value;
+      setColors(gl);
       drawScene();
     };
   }
@@ -137,6 +138,7 @@ function main() {
   function updateAngle(event, ui) {
     var angleInDegrees = 360 - ui.value;
     angleInRadians = (angleInDegrees * Math.PI) / 180;
+    setColors(gl);
     drawScene();
   }
 
@@ -174,7 +176,7 @@ function main() {
 
     // Draw the geometry.
     var offset = 0;
-    var count = 6;
+    var count = 12;
     gl.drawArrays(gl.TRIANGLES, offset, count);
   }
 }
@@ -184,7 +186,8 @@ function setGeometry(gl) {
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array([
-      -150, -100, 150, -100, -150, 100, 150, -100, -150, 100, 150, 100,
+      -150, -100, 150, -100, -150, 100, 150, -100, -150, 100, 150, 100, -350,
+      -300, 350, -300, -350, 300, 0, 0, 500, 0, 0, 500,
     ]),
     gl.STATIC_DRAW
   );
@@ -194,39 +197,56 @@ function setGeometry(gl) {
 // that make the rectangle.
 function setColors(gl) {
   // Pick 2 random colors.
-  var r1 = Math.random();
-  var b1 = Math.random();
-  var g1 = Math.random();
-  var r2 = Math.random();
-  var b2 = Math.random();
-  var g2 = Math.random();
-
   gl.bufferData(
     gl.ARRAY_BUFFER,
     new Float32Array([
-      r1,
-      b1,
-      g1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
       1,
-      r1,
-      b1,
-      g1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
       1,
-      r1,
-      b1,
-      g1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
       1,
-      r2,
-      b2,
-      g2,
+      Math.random(),
+      Math.random(),
+      Math.random(),
       1,
-      r2,
-      b2,
-      g2,
+      Math.random(),
+      Math.random(),
+      Math.random(),
       1,
-      r2,
-      b2,
-      g2,
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
+      1,
+      Math.random(),
+      Math.random(),
+      Math.random(),
       1,
     ]),
     gl.STATIC_DRAW
