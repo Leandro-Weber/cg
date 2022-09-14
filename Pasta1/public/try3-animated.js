@@ -181,10 +181,11 @@ function main() {
   }
 
   //ÁREA DE TESTES DE CHERNOBYL ABAIXO, LEITURA NÃO RECOMENDADA PARA PESSOAS SENSÍVEIS
-  setInterval(render, 1660);
+  //setInterval(render, 16);
   var control1 = true;
   var control2 = true;
   var angleInDegrees = 0;
+  requestAnimationFrame(render);
   function render() {
     if (translation[0] >= gl.canvas.width) control1 = true;
     if (translation[0] <= 0) control1 = false;
@@ -199,6 +200,7 @@ function main() {
     setColors(gl);
     //setColors2(gl, translation[0]);
     drawScene();
+    requestAnimationFrame(render);
   }
 
   // function render() {
