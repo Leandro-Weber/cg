@@ -1,3 +1,11 @@
+const cubeUniforms = {
+  u_colorMult: [0.8, 0, 0.8, 1],
+  //u_colorMult: [Math.random(), 0, 0.2, 1],
+  u_matrix: m4.identity(),
+};
+function newColor() {
+  cubeUniforms.u_colorMult = config.color();
+}
 function main() {
   const { gl, meshProgramInfo } = initializeWorld();
 
@@ -12,12 +20,6 @@ function main() {
   );
 
   var fieldOfViewRadians = degToRad(30);
-
-  const cubeUniforms = {
-    u_colorMult: [0.8, 0, 0.8, 1],
-    //u_colorMult: [Math.random(), 0, 0.2, 1],
-    u_matrix: m4.identity(),
-  };
 
   function computeMatrix(viewProjectionMatrix, translation, yRotation) {
     var matrix = m4.translate(
@@ -64,13 +66,13 @@ function main() {
       [config.x, config.y, 0],
       config.rotate
     );
-
-    cubeUniforms.u_colorMult = [
-      converter(config.rotate, 20),
-      0.2,
-      converter(config.rotate, 20),
-      1,
-    ];
+    //cubeUniforms.u_colorMult = config.color();
+    // cubeUniforms.u_colorMult = [
+    //   converter(config.rotate, 20),
+    //   0.2,
+    //   converter(config.rotate, 20),
+    //   1,
+    // ];
     // Set the uniforms we just computed
     twgl.setUniforms(meshProgramInfo, cubeUniforms);
 
