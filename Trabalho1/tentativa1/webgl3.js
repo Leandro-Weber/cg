@@ -42,21 +42,48 @@ const radToDeg = (r) => (r * 180) / Math.PI;
 
 var config = {
   rotate: degToRad(20),
-  x: 0,
+  x: 1,
   y: 0,
-  color: function () {
-    var color = [Math.random(), Math.random(), Math.random(), 1];
-    //cubeUniforms.u_colorMult = [Math.random(), Math.random(), Math.random(), 1];
-    return color;
+  addFrente: function () {
+    countF++;
+
+    mioca.children.push({
+      name: `mioca${countF}`,
+      translation: [countF - 1, 0, 0],
+    });
+    objectsToDraw = [];
+    objects = [];
+    nodeInfosByName = {};
+    scene = makeNode(mioca);
+
+    console.log(mioca);
+    return;
+  },
+  addCima: function () {
+    countC++;
+
+    mioca.children.push({
+      name: `miocaCima${countC}`,
+      translation: [0, countC, 0],
+    });
+    objectsToDraw = [];
+    objects = [];
+    nodeInfosByName = {};
+    scene = makeNode(mioca);
+
+    console.log(mioca);
+    return;
   },
 };
 
 const loadGUI = (gl) => {
   const gui = new dat.GUI();
   gui.add(config, "rotate", 0, 20, 0.1);
-  gui.add(config, "x", -50, 50, 1);
+  gui.add(config, "x", 1, 1000, 1);
   gui.add(config, "y", -50, gl.canvas.height, 1);
-  gui.add(config, "color");
+  gui.add(config, "addFrente");
+  gui.add(config, "addCima");
+
   //gui.add(config, "teste", 0, 100);
 };
 
@@ -129,7 +156,52 @@ Node.prototype.updateWorldMatrix = function (matrix) {
 
 // VARIAVEIS PARA USO NO MAIN ----------------------------------------------------------------------------------
 
+var objectsToDraw = [];
+var objects = [];
+var nodeInfosByName = {};
+var scene;
+var mioca = {};
+var countF = 0;
+var countC = 0;
+var programInfo;
+var cubeBufferInfo;
+var cubeVAO;
+
 // VARIAVEIS PARA USO NO MAIN ----------------------------------------------------------------------------------
+
+function makeNode(nodeDescription) {
+  var trs = new TRS();
+  var node = new Node(trs);
+  nodeInfosByName[nodeDescription.name] = {
+    trs: trs,
+    node: node,
+  };
+  trs.translation = nodeDescription.translation || trs.translation;
+  //trs.scale = trs.scale;
+  if (nodeDescription.draw !== false) {
+    node.drawInfo = {
+      uniforms: {
+        u_colorOffset: [0, 0, 0.5, 0],
+        u_colorMult: [0.4, 0.4, 0.4, 1],
+      },
+      programInfo: programInfo,
+      // Alterar buffer info para a forma desejada
+      bufferInfo: cubeBufferInfo,
+      // Alterar vertexArray para a informação desejada
+      vertexArray: cubeVAO,
+    };
+    objectsToDraw.push(node.drawInfo);
+    objects.push(node);
+  }
+  makeNodes(nodeDescription.children).forEach(function (child) {
+    child.setParent(node);
+  });
+  return node;
+}
+
+function makeNodes(nodeDescriptions) {
+  return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
+}
 
 function main() {
   // Get A WebGL context
@@ -146,12 +218,12 @@ function main() {
   // normal with a_normal etc..
   twgl.setAttributePrefix("a_");
 
-  var cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
+  cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
 
   // setup GLSL program
-  var programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+  programInfo = twgl.createProgramInfo(gl, [vs, fs]);
 
-  var cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+  cubeVAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
   function degToRad(d) {
     return (d * Math.PI) / 180;
@@ -159,14 +231,10 @@ function main() {
 
   var fieldOfViewRadians = degToRad(60);
 
-  var objectsToDraw = [];
-  var objects = [];
-  var nodeInfosByName = {};
-
   // Let's make all the nodes
 
-  var mioca = {
-    name: "centro",
+  mioca = {
+    name: "mioca1",
     translation: [0, 0, 0],
     children: [
       {
@@ -175,38 +243,7 @@ function main() {
       },
     ],
   };
-
-  function makeNode(nodeDescription) {
-    var trs = new TRS();
-    var node = new Node(trs);
-    nodeInfosByName[nodeDescription.name] = {
-      trs: trs,
-      node: node,
-    };
-    trs.translation = nodeDescription.translation || trs.translation;
-    //trs.scale = trs.scale;
-    if (nodeDescription.draw !== false) {
-      node.drawInfo = {
-        uniforms: {
-          u_colorOffset: [0, 0, 0.5, 0],
-          u_colorMult: [0.4, 0.4, 0.4, 1],
-        },
-        programInfo: programInfo,
-        bufferInfo: cubeBufferInfo,
-        vertexArray: cubeVAO,
-      };
-      objectsToDraw.push(node.drawInfo);
-      objects.push(node);
-    }
-    makeNodes(nodeDescription.children).forEach(function (child) {
-      child.setParent(node);
-    });
-    return node;
-  }
-
-  function makeNodes(nodeDescriptions) {
-    return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
-  }
+  countF = 2;
 
   //   var scene = makeNode(blockGuyNodeDescriptions);
   //   nodeInfosByName["left-finger"].trs.scale = [0.5, 2, 0.5];
@@ -216,7 +253,7 @@ function main() {
   //   nodeInfosByName["hilt"].trs.translation = [-1, 0, 0];
   //   nodeInfosByName["blade"].trs.scale = [0.5, 3.5, 0.1];
   //   nodeInfosByName["blade"].trs.translation = [-1, 1.8, 0];
-  var scene = makeNode(mioca);
+  scene = makeNode(mioca);
   requestAnimationFrame(drawScene);
   console.log(objects);
   // Draw the scene.
@@ -249,8 +286,8 @@ function main() {
     var adjust;
     var speed = 3;
     var c = time * speed;
-    adjust = degToRad(time * 1000);
-    nodeInfosByName["centro"].trs.rotation[0] = adjust;
+    adjust = degToRad(time * config.x);
+    nodeInfosByName["mioca1"].trs.rotation[0] = adjust;
 
     // adjust = Math.abs(Math.sin(c));
     // nodeInfosByName["point between feet"].trs.translation[1] = adjust;
