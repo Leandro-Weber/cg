@@ -43,6 +43,7 @@ var config = {
   x: 0,
   y: 0,
   rotation: 0,
+  camera_x: 4,
   addCaixa: function () {
     countC++;
 
@@ -65,6 +66,7 @@ const loadGUI = () => {
   gui.add(config, "y", -100, 100, 5);
   gui.add(config, "rotation", -1000, 1000, 10);
   gui.add(config, "addCaixa");
+  gui.add(config, "camera_x", 0, 20, 0.5);
 };
 
 var TRS = function () {
@@ -143,6 +145,11 @@ var countF = 0;
 var countC = 0;
 var programInfo;
 
+//CAMERA VARIABLES
+var cameraPosition;
+var target;
+var up;
+
 function makeNode(nodeDescription) {
   var trs = new TRS();
   var node = new Node(trs);
@@ -154,8 +161,8 @@ function makeNode(nodeDescription) {
   if (nodeDescription.draw !== false) {
     node.drawInfo = {
       uniforms: {
-        u_colorOffset: [0.2, 0.7, 0.2, 0],
-        u_colorMult: [0.4, 0.0, 0.4, 1],
+        u_colorOffset: [0.2, 0.2, 0.7, 0],
+        u_colorMult: [0.4, 0.1, 0.4, 1],
       },
       programInfo: programInfo,
       bufferInfo: cubeBufferInfo,
@@ -192,44 +199,75 @@ function main() {
     15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
   ]);
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
-  var arrays = {
+  var arrays_pyramid = {
     position: new Float32Array([
-      -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
+      0, 1, 0,
 
-      -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1,
+      -1, -1, 1,
 
-      -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1,
+      1, -1, 1,
 
-      -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1,
+      0, 1, 0,
 
-      1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+      1, -1, 1,
 
-      -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1,
+      1, -1, -1,
+
+      0, 1, 0,
+
+      1, -1, -1,
+
+      -1, -1, -1,
+
+      0, 1, 0,
+
+      -1, -1, -1,
+
+      -1, -1, 1,
     ]),
 
-    texcoord: new Float32Array([
-      1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1,
-      1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1,
-      0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0, 1, 1,
-      1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
-      0, 1, 1,
+    // texcoord: new Float32Array([
+    //   1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1,
+    //   1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1,
+    //   0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0, 1, 1,
+    //   1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
+    //   0, 1, 1,
+    // ]),
+    indices: new Uint16Array([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 8, 4, 1, 8, 5, 2,
     ]),
     normal: new Float32Array([
-      1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
+      1, -1, 1,
 
-      -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1,
+      1, -1, 1,
 
-      -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1,
+      1, 1, 1,
 
-      -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1,
+      -1, 1, 1,
 
-      1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+      -1, -1, -1,
 
-      -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1,
+      -1, 1, -1,
     ]),
   };
 
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
+  var arrays_cube = {
+    // vertex positions for a cube
+    position: new Float32Array([
+      1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1,
+      -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1,
+      1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1,
+      1, -1, 1, -1, -1, -1, -1, -1,
+    ]),
+    // vertex normals for a cube
+    normal: new Float32Array([
+      1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+      0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0,
+      -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
+      0, 0, -1,
+    ]),
+  };
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_cube);
 
   // setup GLSL program
   programInfo = twgl.createProgramInfo(gl, [vs, fs]);
@@ -274,9 +312,9 @@ function main() {
     var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
     // Compute the camera's matrix using look at.
-    var cameraPosition = [4, 3.5, 10];
-    var target = [0, 3.5, 0];
-    var up = [0, 1, 0];
+    cameraPosition = [config.camera_x, 3.5, 10];
+    target = [0, 3.5, 0];
+    up = [0, 1, 0];
     var cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
     // Make a view matrix from the camera matrix.
