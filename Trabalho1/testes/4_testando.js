@@ -57,6 +57,9 @@ var config = {
     nodeInfosByName = {};
     scene = makeNode(objeto);
   },
+  triangulo: 0,
+  criarVertice: function () {},
+  time: 0.0,
 };
 
 const loadGUI = () => {
@@ -67,6 +70,9 @@ const loadGUI = () => {
   gui.add(config, "rotation", -1000, 1000, 10);
   gui.add(config, "addCaixa");
   gui.add(config, "camera_x", 0, 20, 0.5);
+  gui.add(config, "triangulo", 0, 20, 0.5);
+  gui.add(config, "criarVertice");
+  gui.add(config, "time", 0, 100);
 };
 
 var TRS = function () {
@@ -266,6 +272,10 @@ function main() {
       -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1,
       0, 0, -1,
     ]),
+    indices: new Uint16Array([
+      0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
+      14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
+    ]),
   };
   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_cube);
 
@@ -298,6 +308,8 @@ function main() {
   // Draw the scene.
   function drawScene(time) {
     time *= 0.001;
+    config.time = time;
+    console.log(time);
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
 
