@@ -34,60 +34,38 @@ void main() {
 }
 `;
 
-// INTERFACE ---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE------------------------------------
-
 const degToRad = (d) => (d * Math.PI) / 180;
 
 const radToDeg = (r) => (r * 180) / Math.PI;
 
 var config = {
   rotate: degToRad(20),
-  x: 1,
-  y: 1,
-  addFrente: function () {
-    countF++;
-
-    mioca.children.push({
-      name: `mioca${countF}`,
-      translation: [countF - 1, 0, 0],
-    });
-    objectsToDraw = [];
-    objects = [];
-    nodeInfosByName = {};
-    scene = makeNode(mioca);
-
-    console.log(mioca);
-    return;
-  },
-  addCima: function () {
+  x: 0,
+  y: 0,
+  rotation: 0,
+  addCaixa: function () {
     countC++;
 
-    mioca.children.push({
-      name: `miocaCima${countC}`,
+    objeto.children.push({
+      name: `cubo${countC}`,
       translation: [0, countC, 0],
     });
+
     objectsToDraw = [];
     objects = [];
     nodeInfosByName = {};
-    scene = makeNode(mioca);
-
-    console.log(mioca);
-    return;
+    scene = makeNode(objeto);
   },
 };
 
-const loadGUI = (gl) => {
+const loadGUI = () => {
   const gui = new dat.GUI();
-  gui.add(config, "rotate", 0, 20, 0.1);
-  gui.add(config, "x", 1, 1000, 1);
-  gui.add(config, "y", 1, 20, 1);
-  gui.add(config, "addFrente");
-  gui.add(config, "addCima");
-
-  //gui.add(config, "teste", 0, 100);
+  gui.add(config, "rotate", 0, 20, 0.5);
+  gui.add(config, "x", -150, 150, 5);
+  gui.add(config, "y", -100, 100, 5);
+  gui.add(config, "rotation", -1000, 1000, 10);
+  gui.add(config, "addCaixa");
 };
-
-// INTERFACE ---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE---INTERFACE------------------------------------
 
 var TRS = function () {
   this.translation = [0, 0, 0];
@@ -154,20 +132,16 @@ Node.prototype.updateWorldMatrix = function (matrix) {
   });
 };
 
-// VARIAVEIS PARA USO NO MAIN ----------------------------------------------------------------------------------
-
+var cubeVAO;
+var cubeBufferInfo;
 var objectsToDraw = [];
 var objects = [];
 var nodeInfosByName = {};
 var scene;
-var mioca = {};
+var objeto = {};
 var countF = 0;
 var countC = 0;
 var programInfo;
-var cubeBufferInfo;
-var cubeVAO;
-
-// VARIAVEIS PARA USO NO MAIN ----------------------------------------------------------------------------------
 
 function makeNode(nodeDescription) {
   var trs = new TRS();
@@ -177,17 +151,14 @@ function makeNode(nodeDescription) {
     node: node,
   };
   trs.translation = nodeDescription.translation || trs.translation;
-  //trs.scale = trs.scale;
   if (nodeDescription.draw !== false) {
     node.drawInfo = {
       uniforms: {
-        u_colorOffset: [Math.random(), Math.random(), Math.random(), 0],
-        u_colorMult: [0.5, 0.2, 0.3, 1],
+        u_colorOffset: [0.2, 0.7, 0.2, 0],
+        u_colorMult: [0.4, 0.0, 0.4, 1],
       },
       programInfo: programInfo,
-      // Alterar buffer info para a forma desejada
       bufferInfo: cubeBufferInfo,
-      // Alterar vertexArray para a informação desejada
       vertexArray: cubeVAO,
     };
     objectsToDraw.push(node.drawInfo);
@@ -202,7 +173,6 @@ function makeNode(nodeDescription) {
 function makeNodes(nodeDescriptions) {
   return nodeDescriptions ? nodeDescriptions.map(makeNode) : [];
 }
-
 function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
@@ -217,10 +187,49 @@ function main() {
   // Tell the twgl to match position with a_position, n
   // normal with a_normal etc..
   twgl.setAttributePrefix("a_");
+  var indices = new Uint16Array([
+    0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14,
+    15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
+  ]);
+  //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
+  var arrays = {
+    position: new Float32Array([
+      -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
 
-  cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
-  console.log("cubeBufferInfo:");
-  console.log(cubeBufferInfo);
+      -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1,
+
+      -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1,
+
+      -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1,
+
+      1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+
+      -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1,
+    ]),
+
+    texcoord: new Float32Array([
+      1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1,
+      0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0.5, 0.5, 1, 1, 0, 1, 1,
+      1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
+      0, 1, 1,
+    ]),
+    normal: new Float32Array([
+      1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1,
+
+      -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1,
+
+      -1, 1, -1, -1, 1, 1, 1, 1, 1, 1, 1, -1,
+
+      -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1,
+
+      1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1,
+
+      -1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1,
+    ]),
+  };
+
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays);
 
   // setup GLSL program
   programInfo = twgl.createProgramInfo(gl, [vs, fs]);
@@ -233,34 +242,22 @@ function main() {
 
   var fieldOfViewRadians = degToRad(60);
 
+  objectsToDraw = [];
+  objects = [];
+  nodeInfosByName = {};
+
   // Let's make all the nodes
-
-  mioca = {
-    name: "mioca1",
+  objeto = {
+    name: "cubo0",
     translation: [0, 0, 0],
-    children: [
-      {
-        name: "mioca2",
-        translation: [1, 0, 0],
-      },
-    ],
+    children: [],
   };
-  countF = 2;
 
-  //   var scene = makeNode(blockGuyNodeDescriptions);
-  //   nodeInfosByName["left-finger"].trs.scale = [0.5, 2, 0.5];
-  //   nodeInfosByName["handle"].trs.scale = [0.2, 1.5, 0.3];
-  //   nodeInfosByName["handle"].trs.translation = [-1, -0.8, 0];
-  //   nodeInfosByName["hilt"].trs.scale = [2, 0.2, 0.5];
-  //   nodeInfosByName["hilt"].trs.translation = [-1, 0, 0];
-  //   nodeInfosByName["blade"].trs.scale = [0.5, 3.5, 0.1];
-  //   nodeInfosByName["blade"].trs.translation = [-1, 1.8, 0];
-  scene = makeNode(mioca);
+  scene = makeNode(objeto);
+
   requestAnimationFrame(drawScene);
-  //console.log(objects);
-  // Draw the scene.
 
-  console.log(mioca);
+  // Draw the scene.
   function drawScene(time) {
     time *= 0.001;
 
@@ -290,13 +287,9 @@ function main() {
     var adjust;
     var speed = 3;
     var c = time * speed;
-    adjust = degToRad(time * config.x);
-    nodeInfosByName[`mioca${config.y}`].trs.rotation[0] = adjust;
-    nodeInfosByName[`mioca${config.y + 1}`].trs.rotation[0] = adjust * 2;
 
-    // adjust = Math.abs(Math.sin(c));
-    // nodeInfosByName["point between feet"].trs.translation[1] = adjust;
-
+    adjust = degToRad(time * config.rotation);
+    nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
     // Update all world matrices in the scene graph
     scene.updateWorldMatrix();
 
