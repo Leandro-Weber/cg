@@ -60,6 +60,7 @@ var config = {
   triangulo: 0,
   criarVertice: function () {},
   time: 0.0,
+  n_cubos: 1,
 };
 
 const loadGUI = () => {
@@ -72,7 +73,19 @@ const loadGUI = () => {
   gui.add(config, "camera_x", 0, 20, 0.5);
   gui.add(config, "triangulo", 0, 20, 0.5);
   gui.add(config, "criarVertice");
-  gui.add(config, "time", 0, 100);
+  gui
+    .add(config, "time", 0, 100)
+    .listen()
+    .onChange(function () {
+      config.rotate = config.time + 1;
+
+      //config.updateDisplay();
+    });
+  var n_cubos = gui.add(config, "n_cubos", 1, countC).listen();
+  n_cubos.onChange(function () {
+    n_cubos = countC;
+    gui.updateDisplay();
+  });
 };
 
 var TRS = function () {
@@ -277,7 +290,7 @@ function main() {
       14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
     ]),
   };
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_cube);
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
   // setup GLSL program
   programInfo = twgl.createProgramInfo(gl, [vs, fs]);
@@ -308,8 +321,6 @@ function main() {
   // Draw the scene.
   function drawScene(time) {
     time *= 0.001;
-    config.time = time;
-    console.log(time);
 
     twgl.resizeCanvasToDisplaySize(gl.canvas);
 
