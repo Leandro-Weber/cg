@@ -104,11 +104,49 @@ const barycentricTriangulo = (arr) => {
   return [x, y];
 };
 
+const devolveTriangulo = (array, vertice) => {
+  var x1, x2, x3, y1, y2, y3;
+
+  for (let index = 0; index < array.length; index = index + 2) {
+    if (array[index] != vertice[0] && array[index + 1] != vertice[1]) {
+      x1 = array[index];
+      y1 = array[index + 1];
+      console.log(`x1: ${x1} e y1: ${y1}`);
+      break;
+    }
+  }
+  for (let index = 0; index < array.length; index = index + 2) {
+    if (array[index] != vertice[0] && array[index + 1] != vertice[1]) {
+      if (array[index] != x1) {
+        if (array[index + 1] != y1) {
+          x2 = array[index];
+          y2 = array[index + 1];
+        }
+      }
+    }
+  }
+  for (let index = 0; index < array.length; index = index + 2) {
+    if (array[index] != vertice[0] && array[index + 1] != vertice[1]) {
+      if (array[index] != x1) {
+        if (array[index + 1] != y1) {
+          if (array[index] != x2) {
+            if (array[index + 1] != y2) {
+              x3 = array[index];
+              y3 = array[index + 1];
+            }
+          }
+        }
+      }
+    }
+  }
+  return [x1, y1, x2, y2, x3, y3];
+};
+
 var config = {
   rotate: 0.0,
   x: 0,
   y: 0,
-  scale: 1.0,
+  rotation: 1.0,
   triangulo: 1,
   criarVertice: function () {
     var n = config.triangulo * 6;
@@ -145,6 +183,39 @@ var config = {
     drawScene();
     return;
   },
+  vertice_index: 0,
+  removerVertice: function () {
+    var vertice = vertexarray.slice(
+      config.vertice_index * 2,
+      config.vertice_index * 2 + 2
+    );
+    var triangulos = [];
+    for (let index = 0; index < vertexarray.length; index = index + 6) {
+      const triang = vertexarray.slice(index, index + 6);
+      for (let i = 0; i < triang.length; i = i + 2) {
+        const vert = triang.slice(i, i + 2);
+        if (vert[0] == vertice[0] && vert[1] == vertice[1]) {
+          triangulos.push(triang[0]);
+          triangulos.push(triang[1]);
+          triangulos.push(triang[2]);
+          triangulos.push(triang[3]);
+          triangulos.push(triang[4]);
+          triangulos.push(triang[5]);
+          break;
+        }
+      }
+    }
+    console.log(`vertice: ${vertice}`);
+    console.log(`triangulos: ${triangulos}`);
+    var t = devolveTriangulo(triangulos, vertice);
+    console.log(t);
+
+    var n = config.vertice_index * 6;
+    var inicio = vertexarray.slice(0, n);
+    var temp = vertexarray.slice(n, n + 6);
+    var resto = vertexarray.slice(n + 6, vertexarray.length);
+    //console.log(triangulos);
+  },
 };
 console.log(vertexarray);
 const loadGUI = () => {
@@ -152,10 +223,12 @@ const loadGUI = () => {
   gui.add(config, "rotate", 0, 90, 0.5);
   gui.add(config, "x", 0, gl.canvas.width, 5);
   gui.add(config, "y", 0, gl.canvas.height, 5);
-  gui.add(config, "scale", 0.2, 10, 0.1);
+  gui.add(config, "rotation", 0.5, 100, 0.1);
 
   gui.add(config, "triangulo", 0, 20, 1);
   gui.add(config, "criarVertice");
+  gui.add(config, "vertice_index", 0, 40, 1);
+  gui.add(config, "removerVertice");
 };
 
 function main() {

@@ -53,9 +53,9 @@ void main() {
   if(vbc.x < 0.03 || vbc.y < 0.03 || vbc.z < 0.03) {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
   } 
-//   else {
-//     gl_FragColor = vec4(0.5, 0.5, 0.8, 1.0);
-//   }
+  else {
+    gl_FragColor = vec4(0.5, 0.5, 0.8, 0.0);
+  }
 }`;
 const calculateBarycentric = (length) => {
   const n = length / 9;
@@ -193,7 +193,7 @@ var objeto = {};
 var countF = 0;
 var countC = 0;
 var programInfo;
-var wireframe = false;
+var wireframe = true;
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -381,7 +381,8 @@ function main() {
   console.log(arrays_cube.indices.length);
 
   // setup GLSL program
-  programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+
+  programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
@@ -451,19 +452,8 @@ function main() {
       );
     });
 
-    wireframe = false;
-    programInfo = twgl.createProgramInfo(gl, [vs, fs]);
-
-    VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-
-    // objectsToDraw = [];
-    // objects = [];
-    // nodeInfosByName = {};
-    scene = makeNode(objeto);
-    scene.updateWorldMatrix();
-
-    // wireframe = true;
-    // programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
+    // wireframe = false;
+    // programInfo = twgl.createProgramInfo(gl, [vs, fs]);
 
     // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
@@ -471,6 +461,33 @@ function main() {
     // objects = [];
     // nodeInfosByName = {};
     // scene = makeNode(objeto);
+    // scene.updateWorldMatrix();
+    // objects.forEach(function (object) {
+    //   object.drawInfo.uniforms.u_matrix = m4.multiply(
+    //     viewProjectionMatrix,
+    //     object.worldMatrix
+    //   );
+    // });
+    // //twgl.drawObjectList(gl, objectsToDraw);
+
+    // wireframe = true;
+    // programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
+
+    // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+
+    // //objectsToDraw = [];
+    // //objects = [];
+    // //nodeInfosByName = {};
+    // scene = makeNode(objeto);
+    // nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
+    // scene.updateWorldMatrix();
+
+    // objects.forEach(function (object) {
+    //   object.drawInfo.uniforms.u_matrix = m4.multiply(
+    //     viewProjectionMatrix,
+    //     object.worldMatrix
+    //   );
+    // });
 
     // ------ Draw the objects --------
 
