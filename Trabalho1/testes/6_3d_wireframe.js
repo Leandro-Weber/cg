@@ -42,7 +42,7 @@ varying vec3 vbc;
 
 void main() {
   vbc = a_barycentric;
-  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+  gl_Position = u_matrix * a_position;
 }`;
 
 var fsw = `
@@ -52,17 +52,24 @@ varying vec3 vbc;
 void main() {
   if(vbc.x < 0.03 || vbc.y < 0.03 || vbc.z < 0.03) {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-  } else {
-    gl_FragColor = vec4(0.5, 0.5, 0.8, 1.0);
-  }
+  } 
+//   else {
+//     gl_FragColor = vec4(0.5, 0.5, 0.8, 1.0);
+//   }
 }`;
+const calculateBarycentric = (length) => {
+  const n = length / 9;
+  const barycentric = [];
+  for (let i = 0; i < n; i++) barycentric.push(1, 0, 0, 0, 1, 0, 0, 0, 1);
+  return new Float32Array(barycentric);
+};
 
 const degToRad = (d) => (d * Math.PI) / 180;
 
 const radToDeg = (r) => (r * 180) / Math.PI;
 
 var config = {
-  rotate: degToRad(20),
+  rotate: 0,
   x: 0,
   y: 0,
   rotation: 0,
@@ -88,12 +95,12 @@ var config = {
 
 const loadGUI = () => {
   const gui = new dat.GUI();
-  gui.add(config, "rotate", 0, 20, 0.5);
+  gui.add(config, "rotate", 0, 360, 0.5);
   gui.add(config, "x", -150, 150, 5);
   gui.add(config, "y", -100, 100, 5);
   gui.add(config, "rotation", -1000, 1000, 10);
   gui.add(config, "addCaixa");
-  gui.add(config, "camera_x", 0, 20, 0.5);
+  gui.add(config, "camera_x", -20, 20, 0.5);
   gui.add(config, "triangulo", 0, 20, 0.5);
   gui.add(config, "criarVertice");
   gui
@@ -186,6 +193,7 @@ var objeto = {};
 var countF = 0;
 var countC = 0;
 var programInfo;
+var wireframe = false;
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -201,22 +209,34 @@ function makeNode(nodeDescription) {
   };
   trs.translation = nodeDescription.translation || trs.translation;
   if (nodeDescription.draw !== false) {
-    node.drawInfo = {
-      uniforms: {
-        u_colorOffset: [0.2, 0.2, 0.7, 0],
-        u_colorMult: [0.4, 0.1, 0.4, 1],
-      },
-      programInfo: programInfo,
-      bufferInfo: cubeBufferInfo,
-      vertexArray: VAO,
-    };
+    if (wireframe) {
+      node.drawInfo = {
+        uniforms: {
+          u_matrix: [0, 0, 0, 1],
+        },
+        programInfo: programInfo,
+        bufferInfo: cubeBufferInfo,
+        vertexArray: VAO,
+      };
+    } else {
+      node.drawInfo = {
+        uniforms: {
+          u_colorOffset: [0.2, 0.2, 0.7, 0],
+          u_colorMult: [0.4, 0.1, 0.4, 1],
+        },
+        programInfo: programInfo,
+        bufferInfo: cubeBufferInfo,
+        vertexArray: VAO,
+      };
+    }
     objectsToDraw.push(node.drawInfo);
     objects.push(node);
+
+    makeNodes(nodeDescription.children).forEach(function (child) {
+      child.setParent(node);
+    });
+    return node;
   }
-  makeNodes(nodeDescription.children).forEach(function (child) {
-    child.setParent(node);
-  });
-  return node;
 }
 
 function makeNodes(nodeDescriptions) {
@@ -266,6 +286,18 @@ function main() {
       -1, -1, -1,
 
       -1, -1, 1,
+
+      -1, -1, -1,
+
+      1, -1, 1,
+
+      -1, -1, 1,
+
+      -1, -1, -1,
+
+      1, -1, -1,
+
+      1, -1, 1,
     ]),
 
     // texcoord: new Float32Array([
@@ -275,6 +307,9 @@ function main() {
     //   1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
     //   0, 1, 1,
     // ]),
+
+    // vetor de indices nao eh usado com o wireframe pq o wireframe precisa que cada triangulo
+    // que seja declarado no vetor precisa ser unico
     // indices: new Uint16Array([
     //   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 8, 4, 1, 8, 5, 2,
     // ]),
@@ -291,8 +326,13 @@ function main() {
 
       -1, 1, -1,
     ]),
+    barycentric: [],
   };
-
+  arrays_pyramid.barycentric = calculateBarycentric(
+    arrays_pyramid.position.length
+  );
+  console.log("aaa");
+  console.log(calculateBarycentric(arrays_pyramid.position.length));
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
   var arrays_cube = {
     // vertex positions for a cube
@@ -313,10 +353,10 @@ function main() {
       0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
       14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
     ],
-    barycentric: [
-      0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
-      14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
-    ],
+    // barycentric: [
+    //   0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12,
+    //   14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
+    // ],
   };
   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
   // Dado um array como:
@@ -361,7 +401,7 @@ function main() {
     translation: [0, 0, 0],
     children: [],
   };
-
+  console.log(programInfo);
   scene = makeNode(objeto);
 
   requestAnimationFrame(drawScene);
@@ -399,6 +439,7 @@ function main() {
 
     adjust = degToRad(time * config.rotation);
     nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
+    //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
     // Update all world matrices in the scene graph
     scene.updateWorldMatrix();
 
@@ -409,6 +450,27 @@ function main() {
         object.worldMatrix
       );
     });
+
+    wireframe = false;
+    programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+
+    VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+
+    // objectsToDraw = [];
+    // objects = [];
+    // nodeInfosByName = {};
+    scene = makeNode(objeto);
+    scene.updateWorldMatrix();
+
+    // wireframe = true;
+    // programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
+
+    // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+
+    // objectsToDraw = [];
+    // objects = [];
+    // nodeInfosByName = {};
+    // scene = makeNode(objeto);
 
     // ------ Draw the objects --------
 

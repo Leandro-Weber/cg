@@ -46,10 +46,10 @@ precision mediump float;
 varying vec3 vbc;
 
 void main() {
-  if(vbc.x < 0.01 || vbc.y < 0.01 || vbc.z < 0.01) {
+  if(vbc.x < 0.03 || vbc.y < 0.03 || vbc.z < 0.03) {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
   } else {
-    gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
+    gl_FragColor = vec4(0.5, 0.5, 0.8, 1.0);
   }
 }`;
 
@@ -108,7 +108,7 @@ var config = {
   rotate: 0.0,
   x: 0,
   y: 0,
-  rotation: 1.0,
+  scale: 1.0,
   triangulo: 1,
   criarVertice: function () {
     var n = config.triangulo * 6;
@@ -152,7 +152,7 @@ const loadGUI = () => {
   gui.add(config, "rotate", 0, 90, 0.5);
   gui.add(config, "x", 0, gl.canvas.width, 5);
   gui.add(config, "y", 0, gl.canvas.height, 5);
-  gui.add(config, "rotation", 0.5, 100, 0.1);
+  gui.add(config, "scale", 0.2, 10, 0.1);
 
   gui.add(config, "triangulo", 0, 20, 1);
   gui.add(config, "criarVertice");
@@ -265,7 +265,7 @@ function drawScene() {
   matrix = m3.projection(gl.canvas.clientWidth, gl.canvas.clientHeight);
   matrix = m3.translate(matrix, config.x, config.y);
   matrix = m3.rotate(matrix, degToRad(config.rotate));
-  matrix = m3.scale(matrix, config.rotation, config.rotation);
+  matrix = m3.scale(matrix, config.scale, config.scale);
 
   // Set the matrix.
   gl.uniformMatrix3fv(matrixLocation, false, matrix);
