@@ -54,7 +54,7 @@ void main() {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
   } 
   else {
-    gl_FragColor = vec4(0.5, 0.5, 0.8, 0.0);
+    gl_FragColor = vec4(vbc.x, vbc.y, vbc.z, 1.0);
   }
 }`;
 const calculateBarycentric = (length) => {
@@ -68,12 +68,25 @@ const degToRad = (d) => (d * Math.PI) / 180;
 
 const radToDeg = (r) => (r * 180) / Math.PI;
 
+const calculaMeioDoTriangulo = (arr) => {
+  const x = (arr[0] + arr[3] + arr[6]) / 3;
+  const y = (arr[1] + arr[4] + arr[7]) / 3;
+  const z = (arr[2] + arr[5] + arr[8]) / 3;
+
+  return [x, y, z];
+};
+var teste = 1;
+var gui;
+var qtd_triangulos = 0;
 var config = {
   rotate: 0,
   x: 0,
   y: 0,
   rotation: 0,
   camera_x: 4,
+  camera_y: 3.5,
+  camera_z: 10,
+
   addCaixa: function () {
     countC++;
 
@@ -88,34 +101,98 @@ var config = {
     scene = makeNode(objeto);
   },
   triangulo: 0,
-  criarVertice: function () {},
+  criarVertice: function () {
+    var n = config.triangulo * 9;
+    var inicio = arrays_pyramid.position.slice(0, n);
+    var temp = arrays_pyramid.position.slice(n, n + 9);
+    var resto = arrays_pyramid.position.slice(
+      n + 9,
+      arrays_pyramid.position.length
+    );
+    var b = calculaMeioDoTriangulo(temp);
+    var novotri = [
+      temp[0],
+      temp[1],
+      temp[2],
+      b[0],
+      b[1],
+      b[2],
+
+      temp[3],
+      temp[4],
+      temp[5],
+
+      temp[3],
+      temp[4],
+      temp[5],
+      b[0],
+      b[1],
+      b[2],
+      temp[6],
+      temp[7],
+      temp[8],
+
+      temp[6],
+      temp[7],
+      temp[8],
+      b[0],
+      b[1],
+      b[2],
+      temp[0],
+      temp[1],
+      temp[2],
+    ];
+    var final = new Float32Array([...inicio, ...novotri, ...resto]);
+
+    arrays_pyramid.position = new Float32Array([...final]);
+    arrays_pyramid.barycentric = calculateBarycentric(
+      arrays_pyramid.position.length
+    );
+    console.log(arrays_pyramid.position);
+    console.log(arrays_pyramid.barycentric);
+    cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+    objectsToDraw = [];
+    objects = [];
+    nodeInfosByName = {};
+    scene = makeNode(objeto);
+    qtd_triangulos = arrays_pyramid.position.length / 9;
+    console.log(qtd_triangulos);
+    gui.updateDisplay();
+    //drawScene();
+  },
   time: 0.0,
   n_cubos: 1,
+  target: 3.5,
 };
 
 const loadGUI = () => {
-  const gui = new dat.GUI();
+  gui = new dat.GUI();
   gui.add(config, "rotate", 0, 360, 0.5);
   gui.add(config, "x", -150, 150, 5);
   gui.add(config, "y", -100, 100, 5);
   gui.add(config, "rotation", -1000, 1000, 10);
   gui.add(config, "addCaixa");
-  gui.add(config, "camera_x", -20, 20, 0.5);
-  gui.add(config, "triangulo", 0, 20, 0.5);
+  gui.add(config, "camera_x", -200, 200, 1);
+  gui.add(config, "camera_y", -200, 200, 1);
+  gui.add(config, "camera_z", -200, 200, 1);
+
+  gui.add(config, "triangulo", 0, qtd_triangulos, 1).listen();
   gui.add(config, "criarVertice");
   gui
-    .add(config, "time", 0, 100)
+    .add(config, "time", 0, teste)
     .listen()
     .onChange(function () {
-      config.rotate = config.time + 1;
+      //config.rotate = config.time + 1;
 
-      //config.updateDisplay();
+      gui.updateDisplay();
     });
   var n_cubos = gui.add(config, "n_cubos", 1, countC).listen();
   n_cubos.onChange(function () {
     n_cubos = countC;
     gui.updateDisplay();
   });
+  gui.add(config, "target", -5, 5, 0.01);
 };
 
 var TRS = function () {
@@ -194,6 +271,17 @@ var countF = 0;
 var countC = 0;
 var programInfo;
 var wireframe = true;
+var arrays_pyramid;
+var gl;
+var aspect;
+var projectionMatrix;
+var cameraMatrix;
+var viewMatrix;
+var viewProjectionMatrix;
+var adjust;
+var speed;
+var c;
+var fieldOfViewRadians;
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -246,7 +334,7 @@ function main() {
   // Get A WebGL context
   /** @type {HTMLCanvasElement} */
   var canvas = document.querySelector("#canvas");
-  var gl = canvas.getContext("webgl2");
+  gl = canvas.getContext("webgl2");
   if (!gl) {
     return;
   }
@@ -261,7 +349,7 @@ function main() {
     15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
   ]);
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
-  var arrays_pyramid = {
+  arrays_pyramid = {
     position: new Float32Array([
       0, 1, 0,
 
@@ -331,8 +419,6 @@ function main() {
   arrays_pyramid.barycentric = calculateBarycentric(
     arrays_pyramid.position.length
   );
-  console.log("aaa");
-  console.log(calculateBarycentric(arrays_pyramid.position.length));
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
   var arrays_cube = {
     // vertex positions for a cube
@@ -390,7 +476,7 @@ function main() {
     return (d * Math.PI) / 180;
   }
 
-  var fieldOfViewRadians = degToRad(60);
+  fieldOfViewRadians = degToRad(60);
 
   objectsToDraw = [];
   objects = [];
@@ -408,93 +494,94 @@ function main() {
   requestAnimationFrame(drawScene);
 
   // Draw the scene.
-  function drawScene(time) {
-    time *= 0.001;
+}
+function drawScene(time) {
+  time *= 0.001;
+  teste = time;
+  config.time = config.time;
+  twgl.resizeCanvasToDisplaySize(gl.canvas);
 
-    twgl.resizeCanvasToDisplaySize(gl.canvas);
+  // Tell WebGL how to convert from clip space to pixels
+  gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    // Tell WebGL how to convert from clip space to pixels
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+  //gl.enable(gl.CULL_FACE);
+  gl.enable(gl.DEPTH_TEST);
 
-    //gl.enable(gl.CULL_FACE);
-    gl.enable(gl.DEPTH_TEST);
+  // Compute the projection matrix
+  var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+  var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
-    // Compute the projection matrix
-    var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
-    var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
+  // Compute the camera's matrix using look at.
+  cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+  target = [config.target, 0, 0];
+  up = [0, 1, 0];
+  var cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
-    // Compute the camera's matrix using look at.
-    cameraPosition = [config.camera_x, 3.5, 10];
-    target = [0, 3.5, 0];
-    up = [0, 1, 0];
-    var cameraMatrix = m4.lookAt(cameraPosition, target, up);
+  // Make a view matrix from the camera matrix.
+  var viewMatrix = m4.inverse(cameraMatrix);
 
-    // Make a view matrix from the camera matrix.
-    var viewMatrix = m4.inverse(cameraMatrix);
+  var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
-    var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+  adjust;
+  speed = 3;
+  c = time * speed;
 
-    var adjust;
-    var speed = 3;
-    var c = time * speed;
+  adjust = degToRad(time * config.rotation);
+  nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
+  //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
+  // Update all world matrices in the scene graph
+  scene.updateWorldMatrix();
 
-    adjust = degToRad(time * config.rotation);
-    nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
-    //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
-    // Update all world matrices in the scene graph
-    scene.updateWorldMatrix();
+  // Compute all the matrices for rendering
+  objects.forEach(function (object) {
+    object.drawInfo.uniforms.u_matrix = m4.multiply(
+      viewProjectionMatrix,
+      object.worldMatrix
+    );
+  });
 
-    // Compute all the matrices for rendering
-    objects.forEach(function (object) {
-      object.drawInfo.uniforms.u_matrix = m4.multiply(
-        viewProjectionMatrix,
-        object.worldMatrix
-      );
-    });
+  // wireframe = false;
+  // programInfo = twgl.createProgramInfo(gl, [vs, fs]);
 
-    // wireframe = false;
-    // programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+  // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
-    // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+  // objectsToDraw = [];
+  // objects = [];
+  // nodeInfosByName = {};
+  // scene = makeNode(objeto);
+  // scene.updateWorldMatrix();
+  // objects.forEach(function (object) {
+  //   object.drawInfo.uniforms.u_matrix = m4.multiply(
+  //     viewProjectionMatrix,
+  //     object.worldMatrix
+  //   );
+  // });
+  // //twgl.drawObjectList(gl, objectsToDraw);
 
-    // objectsToDraw = [];
-    // objects = [];
-    // nodeInfosByName = {};
-    // scene = makeNode(objeto);
-    // scene.updateWorldMatrix();
-    // objects.forEach(function (object) {
-    //   object.drawInfo.uniforms.u_matrix = m4.multiply(
-    //     viewProjectionMatrix,
-    //     object.worldMatrix
-    //   );
-    // });
-    // //twgl.drawObjectList(gl, objectsToDraw);
+  // wireframe = true;
+  // programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
 
-    // wireframe = true;
-    // programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
+  // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
-    // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+  // //objectsToDraw = [];
+  // //objects = [];
+  // //nodeInfosByName = {};
+  // scene = makeNode(objeto);
+  // nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
+  // scene.updateWorldMatrix();
 
-    // //objectsToDraw = [];
-    // //objects = [];
-    // //nodeInfosByName = {};
-    // scene = makeNode(objeto);
-    // nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
-    // scene.updateWorldMatrix();
+  // objects.forEach(function (object) {
+  //   object.drawInfo.uniforms.u_matrix = m4.multiply(
+  //     viewProjectionMatrix,
+  //     object.worldMatrix
+  //   );
+  // });
 
-    // objects.forEach(function (object) {
-    //   object.drawInfo.uniforms.u_matrix = m4.multiply(
-    //     viewProjectionMatrix,
-    //     object.worldMatrix
-    //   );
-    // });
+  // ------ Draw the objects --------
 
-    // ------ Draw the objects --------
+  twgl.drawObjectList(gl, objectsToDraw);
 
-    twgl.drawObjectList(gl, objectsToDraw);
-
-    requestAnimationFrame(drawScene);
-  }
+  requestAnimationFrame(drawScene);
 }
 
 main();
