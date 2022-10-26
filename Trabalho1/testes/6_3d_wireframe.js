@@ -14,7 +14,8 @@ void main() {
   gl_Position = u_matrix * a_position;
 
   // Pass the color to the fragment shader.
-  v_color = a_color;
+  //v_color = a_color;
+  v_color = a_position;
 }
 `;
 
@@ -75,6 +76,28 @@ const calculaMeioDoTriangulo = (arr) => {
 
   return [x, y, z];
 };
+
+const calculaMeioDoTrianguloIndices = (arr) => {
+  // arr contem os indices dos vertices q formam o triangulo que quero adicionar um vertice no meio
+  const x =
+    (arrays_pyramid.position[arr[0] * 3] +
+      arrays_pyramid.position[arr[1] * 3] +
+      arrays_pyramid.position[arr[2] * 3]) /
+    3;
+  const y =
+    (arrays_pyramid.position[arr[0] * 3 + 1] +
+      arrays_pyramid.position[arr[1] * 3 + 1] +
+      arrays_pyramid.position[arr[2] * 3 + 1]) /
+    3;
+  const z =
+    (arrays_pyramid.position[arr[0] * 3 + 2] +
+      arrays_pyramid.position[arr[1] * 3 + 2] +
+      arrays_pyramid.position[arr[2] * 3 + 2]) /
+    3;
+
+  return [x, y, z];
+};
+
 var teste = 1;
 var gui;
 var qtd_triangulos = 0;
@@ -82,7 +105,9 @@ var config = {
   rotate: 0,
   x: 0,
   y: 0,
-  rotation: 0,
+  z: 0,
+  spin_x: 0,
+  spin_y: 0,
   camera_x: 4,
   camera_y: 3.5,
   camera_z: 10,
@@ -101,98 +126,198 @@ var config = {
     scene = makeNode(objeto);
   },
   triangulo: 0,
+  // criarVertice: function () {
+  //   var n = config.triangulo * 9;
+  //   var inicio = arrays_pyramid.position.slice(0, n);
+  //   var temp = arrays_pyramid.position.slice(n, n + 9);
+  //   var resto = arrays_pyramid.position.slice(
+  //     n + 9,
+  //     arrays_pyramid.position.length
+  //   );
+  //   var b = calculaMeioDoTriangulo(temp);
+  //   var novotri = [
+  //     temp[0],
+  //     temp[1],
+  //     temp[2],
+  //     b[0],
+  //     b[1],
+  //     b[2],
+
+  //     temp[3],
+  //     temp[4],
+  //     temp[5],
+
+  //     temp[3],
+  //     temp[4],
+  //     temp[5],
+  //     b[0],
+  //     b[1],
+  //     b[2],
+  //     temp[6],
+  //     temp[7],
+  //     temp[8],
+
+  //     temp[6],
+  //     temp[7],
+  //     temp[8],
+  //     b[0],
+  //     b[1],
+  //     b[2],
+  //     temp[0],
+  //     temp[1],
+  //     temp[2],
+  //   ];
+  //   var final = new Float32Array([...inicio, ...novotri, ...resto]);
+
+  //   arrays_pyramid.position = new Float32Array([...final]);
+  //   arrays_pyramid.barycentric = calculateBarycentric(
+  //     arrays_pyramid.position.length
+  //   );
+  //   console.log(arrays_pyramid.position);
+  //   console.log(arrays_pyramid.barycentric);
+  //   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+  //   objectsToDraw = [];
+  //   objects = [];
+  //   nodeInfosByName = {};
+  //   scene = makeNode(objeto);
+  //   qtd_triangulos = arrays_pyramid.position.length / 9;
+  //   console.log(qtd_triangulos);
+  //   gui.updateDisplay();
+  //   //drawScene();
+  // },
   criarVertice: function () {
-    var n = config.triangulo * 9;
-    var inicio = arrays_pyramid.position.slice(0, n);
-    var temp = arrays_pyramid.position.slice(n, n + 9);
-    var resto = arrays_pyramid.position.slice(
-      n + 9,
-      arrays_pyramid.position.length
+    console.log("indices");
+    console.log(arrays_pyramid.indices);
+    var n = config.triangulo * 3;
+    var inicio = arrays_pyramid.indices.slice(0, n);
+    var temp = arrays_pyramid.indices.slice(n, n + 3);
+    var resto = arrays_pyramid.indices.slice(
+      n + 3,
+      arrays_pyramid.indices.length
     );
-    var b = calculaMeioDoTriangulo(temp);
+    var b = calculaMeioDoTrianguloIndices(temp);
+    var new_indice = arrays_pyramid.position.length / 3;
+
+    arrays_pyramid.position = new Float32Array([
+      ...arrays_pyramid.position,
+      ...b,
+    ]);
+    console.log("b");
+    console.log(arrays_pyramid.position);
     var novotri = [
       temp[0],
+      new_indice,
       temp[1],
+
+      temp[1],
+      new_indice,
       temp[2],
-      b[0],
-      b[1],
-      b[2],
 
-      temp[3],
-      temp[4],
-      temp[5],
-
-      temp[3],
-      temp[4],
-      temp[5],
-      b[0],
-      b[1],
-      b[2],
-      temp[6],
-      temp[7],
-      temp[8],
-
-      temp[6],
-      temp[7],
-      temp[8],
-      b[0],
-      b[1],
-      b[2],
+      temp[2],
+      new_indice,
       temp[0],
-      temp[1],
-      temp[2],
     ];
-    var final = new Float32Array([...inicio, ...novotri, ...resto]);
+    console.log("novotri");
+    console.log(novotri);
+    var final = new Uint16Array([...inicio, ...novotri, ...resto]);
 
-    arrays_pyramid.position = new Float32Array([...final]);
-    arrays_pyramid.barycentric = calculateBarycentric(
-      arrays_pyramid.position.length
-    );
+    arrays_pyramid.indices = new Uint16Array([...final]);
+    console.log("indices");
+    console.log(arrays_pyramid.indices);
+
+    console.log("positions");
     console.log(arrays_pyramid.position);
-    console.log(arrays_pyramid.barycentric);
+
+    // console.log(arrays_pyramid.position);
+    // console.log(arrays_pyramid.indices);
     cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
     objectsToDraw = [];
     objects = [];
     nodeInfosByName = {};
     scene = makeNode(objeto);
-    qtd_triangulos = arrays_pyramid.position.length / 9;
-    console.log(qtd_triangulos);
+
     gui.updateDisplay();
     //drawScene();
   },
-  time: 0.0,
-  n_cubos: 1,
+  //time: 0.0,
   target: 3.5,
+  vx: 0,
+  vy: 0,
+  vz: 0,
+  vertice: 0,
+  moverVertice: function () {
+    var n = config.vertice * 3;
+    arrays_pyramid.position[n] = config.vx;
+    arrays_pyramid.position[n + 1] = config.vy;
+    arrays_pyramid.position[n + 2] = config.vz;
+    cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+    objectsToDraw = [];
+    objects = [];
+    nodeInfosByName = {};
+    scene = makeNode(objeto);
+  },
 };
+
+var folder_vertice;
+var folder_camera;
+var folder_matrix;
 
 const loadGUI = () => {
   gui = new dat.GUI();
-  gui.add(config, "rotate", 0, 360, 0.5);
-  gui.add(config, "x", -150, 150, 5);
-  gui.add(config, "y", -100, 100, 5);
-  gui.add(config, "rotation", -1000, 1000, 10);
-  gui.add(config, "addCaixa");
-  gui.add(config, "camera_x", -200, 200, 1);
-  gui.add(config, "camera_y", -200, 200, 1);
-  gui.add(config, "camera_z", -200, 200, 1);
-
-  gui.add(config, "triangulo", 0, qtd_triangulos, 1).listen();
-  gui.add(config, "criarVertice");
-  gui
-    .add(config, "time", 0, teste)
+  folder_vertice = gui.addFolder("Manipular vertices");
+  folder_camera = gui.addFolder("Manipular cameras");
+  folder_matrix = gui.addFolder("Manipular matrizes");
+  folder_vertice.open();
+  folder_matrix
+    .add(config, "rotate", 0, 360, 0.5)
     .listen()
     .onChange(function () {
-      //config.rotate = config.time + 1;
-
-      gui.updateDisplay();
+      nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
+      // A ANIMACAO DE GIRAR SOBREPOE ESSA ALTERACAO TODA VEZ Q RENDERIZA
+      // TEM Q USAR OU UM OU OUTRO
     });
-  var n_cubos = gui.add(config, "n_cubos", 1, countC).listen();
-  n_cubos.onChange(function () {
-    n_cubos = countC;
+  folder_matrix.add(config, "x", -10, 10, 0.5);
+  folder_matrix.add(config, "y", -10, 10, 0.5);
+  folder_matrix.add(config, "z", -10, 10, 0.5);
+
+  folder_matrix.add(config, "spin_x", -1000, 1000, 2);
+  folder_matrix.add(config, "spin_y", -1000, 1000, 2);
+
+  gui.add(config, "addCaixa");
+  folder_camera.add(config, "camera_x", -200, 200, 1);
+  folder_camera.add(config, "camera_y", -200, 200, 1);
+  folder_camera.add(config, "camera_z", -200, 200, 1);
+
+  folder_vertice.add(config, "triangulo", 0, 20, 1);
+  folder_vertice.add(config, "criarVertice");
+  // gui
+  //   .add(config, "time", 0, teste)
+  //   .listen()
+  //   .onChange(function () {
+  //     //config.rotate = config.time + 1;
+
+  //     gui.updateDisplay();
+  //   });
+  folder_camera.add(config, "target", -5, 5, 0.01);
+  folder_vertice.add(config, "vertice").onChange(function () {
+    const temp = arrays_pyramid.position.slice(
+      config.vertice * 3,
+      config.vertice * 3 + 3
+    );
+
+    config.vx = temp[0];
+    config.vy = temp[1];
+    config.vz = temp[2];
+
     gui.updateDisplay();
   });
-  gui.add(config, "target", -5, 5, 0.01);
+  folder_vertice.add(config, "vx");
+  folder_vertice.add(config, "vy");
+  folder_vertice.add(config, "vz");
+  folder_vertice.add(config, "moverVertice");
 };
 
 var TRS = function () {
@@ -270,7 +395,7 @@ var objeto = {};
 var countF = 0;
 var countC = 0;
 var programInfo;
-var wireframe = true;
+var wireframe = false;
 var arrays_pyramid;
 var gl;
 var aspect;
@@ -350,6 +475,44 @@ function main() {
   ]);
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
   arrays_pyramid = {
+    // position: new Float32Array([
+    //   0, 1, 0,
+
+    //   -1, -1, 1,
+
+    //   1, -1, 1,
+
+    //   0, 1, 0,
+
+    //   1, -1, 1,
+
+    //   1, -1, -1,
+
+    //   0, 1, 0,
+
+    //   1, -1, -1,
+
+    //   -1, -1, -1,
+
+    //   0, 1, 0,
+
+    //   -1, -1, -1,
+
+    //   -1, -1, 1,
+
+    //   -1, -1, -1,
+
+    //   1, -1, 1,
+
+    //   -1, -1, 1,
+
+    //   -1, -1, -1,
+
+    //   1, -1, -1,
+
+    //   1, -1, 1,
+    // ]),
+
     position: new Float32Array([
       0, 1, 0,
 
@@ -357,35 +520,9 @@ function main() {
 
       1, -1, 1,
 
-      0, 1, 0,
-
-      1, -1, 1,
-
-      1, -1, -1,
-
-      0, 1, 0,
-
       1, -1, -1,
 
       -1, -1, -1,
-
-      0, 1, 0,
-
-      -1, -1, -1,
-
-      -1, -1, 1,
-
-      -1, -1, -1,
-
-      1, -1, 1,
-
-      -1, -1, 1,
-
-      -1, -1, -1,
-
-      1, -1, -1,
-
-      1, -1, 1,
     ]),
 
     // texcoord: new Float32Array([
@@ -398,9 +535,20 @@ function main() {
 
     // vetor de indices nao eh usado com o wireframe pq o wireframe precisa que cada triangulo
     // que seja declarado no vetor precisa ser unico
-    // indices: new Uint16Array([
-    //   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 8, 4, 1, 8, 5, 2,
-    // ]),
+    indices: new Uint16Array([
+      //0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 8, 4, 1, 8, 5, 2,
+      0, 1, 2,
+
+      0, 3, 2,
+
+      0, 4, 3,
+
+      0, 4, 1,
+
+      4, 1, 2,
+
+      3, 4, 2,
+    ]),
     normal: new Float32Array([
       1, -1, 1,
 
@@ -445,6 +593,10 @@ function main() {
     // ],
   };
   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+  console.log(calculaMeioDoTrianguloIndices([0, 3, 2]));
+  console.log(arrays_pyramid.position[0 * 3 + 1]);
+  console.log("a");
   // Dado um array como:
   //   var arrays = {
   //     position: [0, 0, 0, 10, 0, 0, 0, 10, 0, 10, 10, 0],
@@ -468,7 +620,7 @@ function main() {
 
   // setup GLSL program
 
-  programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
+  programInfo = twgl.createProgramInfo(gl, [vs, fs]);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
 
@@ -526,8 +678,12 @@ function drawScene(time) {
   speed = 3;
   c = time * speed;
 
-  adjust = degToRad(time * config.rotation);
+  adjust = degToRad(time * config.spin_x);
   nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
+  adjust = degToRad(time * config.spin_y);
+  nodeInfosByName["cubo0"].trs.rotation[1] = adjust;
+  nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
+
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();
