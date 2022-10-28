@@ -3,19 +3,20 @@
 var vs = `#version 300 es
 
 in vec4 a_position;
-in vec4 a_color;
+in vec3 a_normal;
 
-uniform mat4 u_matrix;
+uniform mat4 u_worldViewProjection;
+uniform mat4 u_world;
 
-out vec4 v_color;
+out vec3 v_normal;
 
 void main() {
   // Multiply the position by the matrix.
-  gl_Position = u_matrix * a_position;
+  gl_Position = u_worldViewProjection * a_position;
 
   // Pass the color to the fragment shader.
   //v_color = a_color;
-  v_color = a_position;
+  v_normal = mat3(u_world) * a_normal;
 }
 `;
 
@@ -23,15 +24,21 @@ var fs = `#version 300 es
 precision highp float;
 
 // Passed in from the vertex shader.
-in vec4 v_color;
+in vec3 v_normal;
 
-uniform vec4 u_colorMult;
-uniform vec4 u_colorOffset;
+//uniform vec4 u_colorMult;
+//uniform vec4 u_colorOffset;
+uniform vec3 u_reverseLightDirection;
+uniform vec4 u_color;
 
 out vec4 outColor;
 
 void main() {
-   outColor = v_color * u_colorMult + u_colorOffset;
+    vec3 normal = normalize(v_normal);
+    vec3 reverseLightDirection = normalize(u_reverseLightDirection);
+    float light = dot(normal, reverseLightDirection);
+   outColor = u_color;
+   outColor.rgb *= light;
 }
 `;
 
@@ -173,9 +180,8 @@ var config = {
     ];
     console.log("novotri");
     console.log(novotri);
-    var final = new Uint16Array([...inicio, ...novotri, ...resto]);
 
-    arrays_pyramid.indices = new Uint16Array([...final]);
+    arrays_pyramid.indices = new Uint16Array([...inicio, ...novotri, ...resto]);
     console.log("indices");
     console.log(arrays_pyramid.indices);
 
@@ -200,21 +206,6 @@ var config = {
   vy: 0,
   vz: 0,
   vertice: 0,
-  moverVertice: function () {
-    var n = config.vertice * 3;
-    arrays_pyramid.position[n] = config.vx;
-    arrays_pyramid.position[n + 1] = config.vy;
-    arrays_pyramid.position[n + 2] = config.vz;
-    cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
-
-    objectsToDraw = [];
-    objects = [];
-    nodeInfosByName = {};
-    scene = makeNode(objeto);
-  },
-  camera_1: false,
-  camera_2: false,
-  camera_3: false,
 };
 
 const moveVertice = function () {
@@ -292,27 +283,6 @@ const loadGUI = () => {
   folder_vertice.add(config, "vz", -10, 10, 0.1).onChange(function () {
     moveVertice();
   });
-  folder_camera
-    .add(config, "camera_1")
-    .listen()
-    .onChange(function () {
-      config.camera_2 = false;
-      config.camera_3 = false;
-    });
-  folder_camera
-    .add(config, "camera_2")
-    .listen()
-    .onChange(function () {
-      config.camera_1 = false;
-      config.camera_3 = false;
-    });
-  folder_camera
-    .add(config, "camera_3")
-    .listen()
-    .onChange(function () {
-      config.camera_1 = false;
-      config.camera_2 = false;
-    });
   //folder_vertice.add(config, "moverVertice");
 };
 
@@ -398,11 +368,17 @@ var aspect;
 var projectionMatrix;
 var cameraMatrix;
 var viewMatrix;
-var viewProjectionMatrix;
+var viewProjectionMatrix = degToRad(0);
 var adjust;
 var speed;
 var c;
 var fieldOfViewRadians;
+var reverseLightDirectionLocation;
+var worldViewProjectionLocation;
+var worldLocation;
+var worldInverseTransposeLocation;
+var worldViewProjectionMatrix;
+var worldMatrix;
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -465,10 +441,7 @@ function main() {
   // Tell the twgl to match position with a_position, n
   // normal with a_normal etc..
   twgl.setAttributePrefix("a_");
-  var indices = new Uint16Array([
-    0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14,
-    15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23,
-  ]);
+
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
   arrays_pyramid = {
     // position: new Float32Array([
@@ -545,51 +518,161 @@ function main() {
 
       3, 4, 2,
     ]),
+    // normal: new Float32Array([
+    //   1, -1, 1,
+
+    //   1, -1, 1,
+
+    //   1, 1, 1,
+
+    //   -1, 1, 1,
+
+    //   -1, -1, -1,
+
+    //   //-1, 1, -1,
+    // ]),
     normal: new Float32Array([
-      1, -1, 1,
+      0, 0, 0,
 
-      1, -1, 1,
+      0, 0, 0,
 
-      1, 1, 1,
+      0, 0, 0,
 
-      -1, 1, 1,
+      0, 0, 0,
 
-      -1, -1, -1,
+      0, 0, 0,
 
       //-1, 1, -1,
     ]),
     barycentric: [],
   };
+
+  var arrays_cube2 = {
+    // vertex positions for a cube
+    position: [
+      0, 0, 0,
+
+      1, 0, 0,
+
+      1, 0, 1,
+
+      0, 0, 1,
+
+      0, 1, 0,
+
+      1, 1, 0,
+
+      1, 1, 1,
+
+      0, 1, 1,
+    ],
+    // vertex normals for a cube
+    normal: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    indices: [
+      0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 1, 5, 6, 1, 6, 2, 0, 3, 7, 0, 7, 4, 2,
+      6, 7, 2, 7, 3, 0, 1, 5, 0, 5, 4,
+    ],
+    barycentric: [],
+  };
+  //arrays_pyramid = arrays_cube2;
   arrays_pyramid.barycentric = calculateBarycentric(
     arrays_pyramid.position.length
   );
-  for (
-    let index = 0;
-    index < arrays_pyramid.indices.length;
-    index = index + 3
-  ) {
-    // cross(B-A, C-A)
-    var a = arrays_pyramid.position[arrays_pyramid.indices[index]];
-    var b = arrays_pyramid.position[arrays_pyramid.indices[index + 1]];
-    var c = arrays_pyramid.position[arrays_pyramid.indices[index + 2]];
-    var x = crossProduct(
-      [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
-      [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
-    );
 
-    arrays_pyramid.normal[arrays_pyramid.indices[index]] = somaNormal(
-      arrays_pyramid.normal[arrays_pyramid.indices[index]],
-      x
-    );
-    arrays_pyramid.normal[arrays_pyramid.indices[index + 1]] = somaNormal(
-      arrays_pyramid.normal[arrays_pyramid.indices[index + 1]],
-      x
-    );
-    arrays_pyramid.normal[arrays_pyramid.indices[index + 2]] = somaNormal(
-      arrays_pyramid.normal[arrays_pyramid.indices[index + 2]],
-      x
-    );
-  }
+  arrays_pyramid.normal = calculateNormal(
+    arrays_pyramid.position,
+    arrays_pyramid.indices
+  );
+  // for (let i = 0; i < arrays_pyramid.indices.length; i = i + 3) {
+  //   // cross(B-A, C-A)
+  //   var i0 = arrays_pyramid.indices[i];
+  //   var i1 = arrays_pyramid.indices[i + 1];
+  //   var i2 = arrays_pyramid.indices[i + 2];
+
+  //   var a = [
+  //     arrays_pyramid.position[i0],
+  //     arrays_pyramid.position[i1],
+  //     arrays_pyramid.position[i2],
+  //   ];
+
+  //   var b = [
+  //     arrays_pyramid.position[i0 + 1],
+  //     arrays_pyramid.position[i1 + 1],
+  //     arrays_pyramid.position[i2 + 1],
+  //   ];
+  //   var c = [
+  //     arrays_pyramid.position[i0 + 2],
+  //     arrays_pyramid.position[i1 + 2],
+  //     arrays_pyramid.position[i2 + 2],
+  //   ];
+  //   console.log(`a: ${a}`);
+  //   console.log(`b: ${b}`);
+  //   console.log(`c: ${c}`);
+  //   var x = crossProduct(
+  //     [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+  //     [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+  //   );
+  //   console.log(`cross product: ${x}`);
+  //   console.log();
+  //   var temp = somaNormal(
+  //     [
+  //       arrays_pyramid.normal[i0],
+  //       arrays_pyramid.normal[i0 + 1],
+  //       arrays_pyramid.normal[i0 + 2],
+  //     ],
+  //     x
+  //   );
+  //   arrays_pyramid.normal[i0] = temp[0];
+  //   arrays_pyramid.normal[i0 + 1] = temp[1];
+  //   arrays_pyramid.normal[i0 + 2] = temp[2];
+  //   arrays_pyramid.normal[i1 * 3] = temp[0];
+  //   arrays_pyramid.normal[i1 * 3 + 1] = temp[1];
+  //   arrays_pyramid.normal[i1 * 3 + 2] = temp[2];
+  //   arrays_pyramid.normal[i2 * 3] = temp[0];
+  //   arrays_pyramid.normal[i2 * 3 + 1] = temp[1];
+  //   arrays_pyramid.normal[i2 * 3 + 2] = temp[2];
+  //   console.log(`normal: ${arrays_pyramid.normal}`);
+  // }
+
+  // for (let i = 0; i < arrays_pyramid.position.length; i = i + 9) {
+  //   // cross(B-A, C-A)
+  //   // var i0 = arrays_pyramid.indices[i];
+  //   // var i1 = arrays_pyramid.indices[i + 1];
+  //   // var i2 = arrays_pyramid.indices[i + 2];
+
+  //   var a = [
+  //     arrays_pyramid.position[i],
+  //     arrays_pyramid.position[i + 1],
+  //     arrays_pyramid.position[i + 2],
+  //   ];
+
+  //   var b = [
+  //     arrays_pyramid.position[i + 3],
+  //     arrays_pyramid.position[i + 4],
+  //     arrays_pyramid.position[i + 5],
+  //   ];
+  //   var c = [
+  //     arrays_pyramid.position[i + 6],
+  //     arrays_pyramid.position[i + 7],
+  //     arrays_pyramid.position[i + 8],
+  //   ];
+  //   // console.log("a");
+  //   // console.log(a);
+  //   // console.log("b");
+  //   // console.log(b);
+  //   // console.log("c");
+  //   // console.log(c);
+  //   var x = crossProduct(
+  //     [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+  //     [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+  //   );
+  //   console.log(`cross product: ${x}`);
+  //   arrays_pyramid.normal[i] = x[0];
+  //   arrays_pyramid.normal[i + 1] = x[1];
+  //   arrays_pyramid.normal[i + 2] = x[2];
+
+  //   console.log(`normal: ${arrays_pyramid.normal}`);
+  // }
 
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
   var arrays_cube = {
@@ -618,9 +701,9 @@ function main() {
   };
   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
-  console.log(calculaMeioDoTrianguloIndices([0, 3, 2]));
-  console.log(arrays_pyramid.position[0 * 3 + 1]);
-  console.log("a");
+  // console.log(calculaMeioDoTrianguloIndices([0, 3, 2]));
+  // console.log(arrays_pyramid.position[0 * 3 + 1]);
+  // console.log("a");
   // Dado um array como:
   //   var arrays = {
   //     position: [0, 0, 0, 10, 0, 0, 0, 10, 0, 10, 10, 0],
@@ -639,14 +722,46 @@ function main() {
   //     texcoord: { buffer: WebGLBuffer, numComponents: 2, },
   //   },
   // };
-  console.log(cubeBufferInfo);
-  console.log(arrays_cube.indices.length);
+  //console.log(cubeBufferInfo);
+  //console.log(arrays_cube.indices.length);
 
   // setup GLSL program
 
   programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+  //console.log(programInfo);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+  gl.useProgram(programInfo.program);
+  //var matrixLocation = gl.getUniformLocation(programInfo.program, "u_matrix");
+  var colorLocation = gl.getUniformLocation(programInfo.program, "u_color");
+  reverseLightDirectionLocation = gl.getUniformLocation(
+    programInfo.program,
+    "u_reverseLightDirection"
+  );
+  worldViewProjectionLocation = gl.getUniformLocation(
+    programInfo.program,
+    "u_worldViewProjection"
+  );
+  worldLocation = gl.getUniformLocation(programInfo.program, "u_world");
+
+  worldMatrix = m4.yRotation(degToRad(config.spin_x));
+  worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
+
+  gl.uniformMatrix4fv(
+    worldViewProjectionLocation,
+    false,
+    worldViewProjectionMatrix
+  );
+  gl.uniformMatrix4fv(worldLocation, false, worldMatrix);
+
+  // Set the matrix.
+  //gl.uniformMatrix4fv(matrixLocation, false, matrix);
+
+  // Set the color to use
+  gl.uniform4fv(colorLocation, [0.2, 1, 0.2, 1]); // green
+
+  // set the light direction.
+  gl.uniform3fv(reverseLightDirectionLocation, [0.5, 0.7, 1]);
 
   function degToRad(d) {
     return (d * Math.PI) / 180;
@@ -664,9 +779,9 @@ function main() {
     translation: [0, 0, 0],
     children: [],
   };
-  console.log(programInfo);
+  //console.log(programInfo);
   scene = makeNode(objeto);
-  cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+
   requestAnimationFrame(drawScene);
 
   // Draw the scene.
@@ -688,53 +803,38 @@ function drawScene(time) {
   var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
   // Compute the camera's matrix using look at.
-  //cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
-  if (!config.camera_1 && !config.camera_2 && !config.camera_3) {
-    if (cameraPosition[0] > config.camera_x) cameraPosition[0] -= 1;
-    if (cameraPosition[0] < config.camera_x) cameraPosition[0] += 1;
-
-    if (cameraPosition[1] > config.camera_y) cameraPosition[1] -= 1;
-    if (cameraPosition[1] < config.camera_y) cameraPosition[1] += 1;
-
-    if (cameraPosition[2] > config.camera_z) cameraPosition[2] -= 1;
-    if (cameraPosition[2] < config.camera_z) cameraPosition[2] += 1;
-  } else if (config.camera_1) {
-    if (cameraPosition[0] > 4) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < 4) cameraPosition[0] += 0.5;
-
-    if (cameraPosition[1] > 4) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < 4) cameraPosition[1] += 0.5;
-
-    if (cameraPosition[2] > 10) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < 10) cameraPosition[2] += 0.5;
-  } else if (config.camera_2) {
-    if (cameraPosition[0] > 10) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < 10) cameraPosition[0] += 0.5;
-
-    if (cameraPosition[1] > 10) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < 10) cameraPosition[1] += 0.5;
-
-    if (cameraPosition[2] > 13) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < 13) cameraPosition[2] += 0.5;
-  } else if (config.camera_3) {
-    if (cameraPosition[0] > -2) cameraPosition[0] -= 0.5;
-    if (cameraPosition[0] < -2) cameraPosition[0] += 0.5;
-
-    if (cameraPosition[1] > -2) cameraPosition[1] -= 0.5;
-    if (cameraPosition[1] < -2) cameraPosition[1] += 0.5;
-
-    if (cameraPosition[2] > 5) cameraPosition[2] -= 0.5;
-    if (cameraPosition[2] < 5) cameraPosition[2] += 0.5;
-  }
-
+  cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
   target = [config.target, 0, 0];
   up = [0, 1, 0];
-  var cameraMatrix = m4.lookAt(cameraPosition, target, up);
+  cameraMatrix = m4.lookAt(cameraPosition, target, up);
+
+  var vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
 
   // Make a view matrix from the camera matrix.
-  var viewMatrix = m4.inverse(cameraMatrix);
+  viewMatrix = m4.inverse(cameraMatrix);
 
-  var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+  viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+
+  worldMatrix = m4.xRotation(degToRad(config.spin_x));
+  worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
+  var worldInverseMatrix = m4.inverse(worldMatrix);
+  var worldInverseTransposeMatrix = m4.transpose(worldInverseMatrix);
+
+  // set the light direction.
+  gl.uniform3fv(reverseLightDirectionLocation, m4.normalize([0.5, 0.7, 1]));
+
+  // Set the matrices
+  gl.uniformMatrix4fv(
+    worldViewProjectionLocation,
+    false,
+    worldViewProjectionMatrix
+  );
+  gl.uniformMatrix4fv(
+    worldInverseTransposeLocation,
+    false,
+    worldInverseTransposeMatrix
+  );
 
   adjust;
   speed = 3;
