@@ -126,66 +126,7 @@ var config = {
     scene = makeNode(objeto);
   },
   triangulo: 0,
-  // criarVertice: function () {
-  //   var n = config.triangulo * 9;
-  //   var inicio = arrays_pyramid.position.slice(0, n);
-  //   var temp = arrays_pyramid.position.slice(n, n + 9);
-  //   var resto = arrays_pyramid.position.slice(
-  //     n + 9,
-  //     arrays_pyramid.position.length
-  //   );
-  //   var b = calculaMeioDoTriangulo(temp);
-  //   var novotri = [
-  //     temp[0],
-  //     temp[1],
-  //     temp[2],
-  //     b[0],
-  //     b[1],
-  //     b[2],
 
-  //     temp[3],
-  //     temp[4],
-  //     temp[5],
-
-  //     temp[3],
-  //     temp[4],
-  //     temp[5],
-  //     b[0],
-  //     b[1],
-  //     b[2],
-  //     temp[6],
-  //     temp[7],
-  //     temp[8],
-
-  //     temp[6],
-  //     temp[7],
-  //     temp[8],
-  //     b[0],
-  //     b[1],
-  //     b[2],
-  //     temp[0],
-  //     temp[1],
-  //     temp[2],
-  //   ];
-  //   var final = new Float32Array([...inicio, ...novotri, ...resto]);
-
-  //   arrays_pyramid.position = new Float32Array([...final]);
-  //   arrays_pyramid.barycentric = calculateBarycentric(
-  //     arrays_pyramid.position.length
-  //   );
-  //   console.log(arrays_pyramid.position);
-  //   console.log(arrays_pyramid.barycentric);
-  //   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
-
-  //   objectsToDraw = [];
-  //   objects = [];
-  //   nodeInfosByName = {};
-  //   scene = makeNode(objeto);
-  //   qtd_triangulos = arrays_pyramid.position.length / 9;
-  //   console.log(qtd_triangulos);
-  //   gui.updateDisplay();
-  //   //drawScene();
-  // },
   criarVertice: function () {
     console.log("indices");
     console.log(arrays_pyramid.indices);
@@ -261,6 +202,19 @@ var config = {
   },
 };
 
+const moveVertice = function () {
+  var n = config.vertice * 3;
+  arrays_pyramid.position[n] = config.vx;
+  arrays_pyramid.position[n + 1] = config.vy;
+  arrays_pyramid.position[n + 2] = config.vz;
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+  objectsToDraw = [];
+  objects = [];
+  nodeInfosByName = {};
+  scene = makeNode(objeto);
+};
+
 var folder_vertice;
 var folder_camera;
 var folder_matrix;
@@ -314,10 +268,16 @@ const loadGUI = () => {
 
     gui.updateDisplay();
   });
-  folder_vertice.add(config, "vx");
-  folder_vertice.add(config, "vy");
-  folder_vertice.add(config, "vz");
-  folder_vertice.add(config, "moverVertice");
+  folder_vertice.add(config, "vx", -10, 10, 0.1).onChange(function () {
+    moveVertice();
+  });
+  folder_vertice.add(config, "vy", -10, 10, 0.1).onChange(function () {
+    moveVertice();
+  });
+  folder_vertice.add(config, "vz", -10, 10, 0.1).onChange(function () {
+    moveVertice();
+  });
+  //folder_vertice.add(config, "moverVertice");
 };
 
 var TRS = function () {
