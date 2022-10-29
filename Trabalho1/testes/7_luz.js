@@ -5,18 +5,26 @@ var vs = `#version 300 es
 in vec4 a_position;
 in vec3 a_normal;
 
-uniform mat4 u_worldViewProjection;
+uniform vec3 u_lightWorldPosition;
+uniform vec3 u_viewWorldPosition;
 uniform mat4 u_world;
+uniform mat4 u_matrix;
+uniform mat4 u_worldInverseTranspose;
 
 out vec3 v_normal;
+out vec3 v_surfaceToLight;
+out vec3 v_surfaceToView;
 
 void main() {
   // Multiply the position by the matrix.
-  gl_Position = u_worldViewProjection * a_position;
+  gl_Position = u_matrix * a_position;
 
   // Pass the color to the fragment shader.
   //v_color = a_color;
-  v_normal = mat3(u_world) * a_normal;
+  v_normal = mat3(u_worldInverseTranspose) * a_normal;
+  vec3 surfaceWorldPosition = (u_world * a_position).xyz;
+  v_surfaceToLight = u_lightWorldPosition - surfaceWorldPosition;
+  v_surfaceToView = u_viewWorldPosition - surfaceWorldPosition;
 }
 `;
 
@@ -25,20 +33,27 @@ precision highp float;
 
 // Passed in from the vertex shader.
 in vec3 v_normal;
+in vec3 v_surfaceToLight;
+in vec3 v_surfaceToView;
 
-//uniform vec4 u_colorMult;
-//uniform vec4 u_colorOffset;
-uniform vec3 u_reverseLightDirection;
 uniform vec4 u_color;
+uniform float u_shininess;
 
 out vec4 outColor;
 
 void main() {
-    vec3 normal = normalize(v_normal);
-    vec3 reverseLightDirection = normalize(u_reverseLightDirection);
-    float light = dot(normal, reverseLightDirection);
-   outColor = u_color;
-   outColor.rgb *= light;
+  vec3 normal = normalize(v_normal);
+  vec3 surfaceToLightDirection = normalize(v_surfaceToLight);
+  vec3 surfaceToViewDirection = normalize(v_surfaceToView);
+  vec3 halfVector = normalize(surfaceToLightDirection + surfaceToViewDirection);
+  float light = dot(v_normal, surfaceToLightDirection);
+  float specular = 0.0;
+  if (light > 0.0) {
+    specular = pow(dot(normal, halfVector), u_shininess);
+  }
+  outColor = u_color;
+  outColor.rgb *= light;
+  outColor.rgb += specular;
 }
 `;
 
@@ -394,26 +409,15 @@ function makeNode(nodeDescription) {
   };
   trs.translation = nodeDescription.translation || trs.translation;
   if (nodeDescription.draw !== false) {
-    if (wireframe) {
-      node.drawInfo = {
-        uniforms: {
-          u_matrix: [0, 0, 0, 1],
-        },
-        programInfo: programInfo,
-        bufferInfo: cubeBufferInfo,
-        vertexArray: VAO,
-      };
-    } else {
-      node.drawInfo = {
-        uniforms: {
-          u_colorOffset: [0.2, 0.2, 0.7, 0],
-          u_colorMult: [0.4, 0.1, 0.4, 1],
-        },
-        programInfo: programInfo,
-        bufferInfo: cubeBufferInfo,
-        vertexArray: VAO,
-      };
-    }
+    node.drawInfo = {
+      uniforms: {
+        u_color: [0.2, 1, 0.2, 1],
+      },
+      programInfo: programInfo,
+      bufferInfo: cubeBufferInfo,
+      vertexArray: VAO,
+    };
+
     objectsToDraw.push(node.drawInfo);
     objects.push(node);
 
@@ -518,32 +522,32 @@ function main() {
 
       3, 4, 2,
     ]),
-    // normal: new Float32Array([
-    //   1, -1, 1,
-
-    //   1, -1, 1,
-
-    //   1, 1, 1,
-
-    //   -1, 1, 1,
-
-    //   -1, -1, -1,
-
-    //   //-1, 1, -1,
-    // ]),
     normal: new Float32Array([
-      0, 0, 0,
+      0, 0, 1,
 
-      0, 0, 0,
+      1, 0, 0,
 
-      0, 0, 0,
+      0, 0, -1,
 
-      0, 0, 0,
+      -1, 0, 0,
 
-      0, 0, 0,
+      0, -1, 0,
 
       //-1, 1, -1,
     ]),
+    // normal: new Float32Array([
+    //   0, 0, 0,
+
+    //   0, 0, 0,
+
+    //   0, 0, 0,
+
+    //   0, 0, 0,
+
+    //   0, 0, 0,
+
+    //   //-1, 1, -1,
+    // ]),
     barycentric: [],
   };
 
@@ -574,65 +578,65 @@ function main() {
     ],
     barycentric: [],
   };
-  //arrays_pyramid = arrays_cube2;
+  arrays_pyramid = arrays_cube2;
   arrays_pyramid.barycentric = calculateBarycentric(
     arrays_pyramid.position.length
   );
 
-  arrays_pyramid.normal = calculateNormal(
-    arrays_pyramid.position,
-    arrays_pyramid.indices
-  );
-  // for (let i = 0; i < arrays_pyramid.indices.length; i = i + 3) {
-  //   // cross(B-A, C-A)
-  //   var i0 = arrays_pyramid.indices[i];
-  //   var i1 = arrays_pyramid.indices[i + 1];
-  //   var i2 = arrays_pyramid.indices[i + 2];
+  // arrays_pyramid.normal = calculateNormal(
+  //   arrays_pyramid.position,
+  //   arrays_pyramid.indices
+  // );
+  for (let i = 0; i < arrays_pyramid.indices.length; i = i + 3) {
+    // cross(B-A, C-A)
+    var i0 = arrays_pyramid.indices[i];
+    var i1 = arrays_pyramid.indices[i + 1];
+    var i2 = arrays_pyramid.indices[i + 2];
 
-  //   var a = [
-  //     arrays_pyramid.position[i0],
-  //     arrays_pyramid.position[i1],
-  //     arrays_pyramid.position[i2],
-  //   ];
+    var a = [
+      arrays_pyramid.position[i0],
+      arrays_pyramid.position[i1],
+      arrays_pyramid.position[i2],
+    ];
 
-  //   var b = [
-  //     arrays_pyramid.position[i0 + 1],
-  //     arrays_pyramid.position[i1 + 1],
-  //     arrays_pyramid.position[i2 + 1],
-  //   ];
-  //   var c = [
-  //     arrays_pyramid.position[i0 + 2],
-  //     arrays_pyramid.position[i1 + 2],
-  //     arrays_pyramid.position[i2 + 2],
-  //   ];
-  //   console.log(`a: ${a}`);
-  //   console.log(`b: ${b}`);
-  //   console.log(`c: ${c}`);
-  //   var x = crossProduct(
-  //     [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
-  //     [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
-  //   );
-  //   console.log(`cross product: ${x}`);
-  //   console.log();
-  //   var temp = somaNormal(
-  //     [
-  //       arrays_pyramid.normal[i0],
-  //       arrays_pyramid.normal[i0 + 1],
-  //       arrays_pyramid.normal[i0 + 2],
-  //     ],
-  //     x
-  //   );
-  //   arrays_pyramid.normal[i0] = temp[0];
-  //   arrays_pyramid.normal[i0 + 1] = temp[1];
-  //   arrays_pyramid.normal[i0 + 2] = temp[2];
-  //   arrays_pyramid.normal[i1 * 3] = temp[0];
-  //   arrays_pyramid.normal[i1 * 3 + 1] = temp[1];
-  //   arrays_pyramid.normal[i1 * 3 + 2] = temp[2];
-  //   arrays_pyramid.normal[i2 * 3] = temp[0];
-  //   arrays_pyramid.normal[i2 * 3 + 1] = temp[1];
-  //   arrays_pyramid.normal[i2 * 3 + 2] = temp[2];
-  //   console.log(`normal: ${arrays_pyramid.normal}`);
-  // }
+    var b = [
+      arrays_pyramid.position[i0 + 1],
+      arrays_pyramid.position[i1 + 1],
+      arrays_pyramid.position[i2 + 1],
+    ];
+    var c = [
+      arrays_pyramid.position[i0 + 2],
+      arrays_pyramid.position[i1 + 2],
+      arrays_pyramid.position[i2 + 2],
+    ];
+    console.log(`a: ${a}`);
+    console.log(`b: ${b}`);
+    console.log(`c: ${c}`);
+    var x = crossProduct(
+      [b[0] - a[0], b[1] - a[1], b[2] - a[2]],
+      [c[0] - a[0], c[1] - a[1], c[2] - a[2]]
+    );
+    console.log(`cross product: ${x}`);
+    console.log();
+    var temp = somaNormal(
+      [
+        arrays_pyramid.normal[i0],
+        arrays_pyramid.normal[i0 + 1],
+        arrays_pyramid.normal[i0 + 2],
+      ],
+      x
+    );
+    arrays_pyramid.normal[i0] = temp[0];
+    arrays_pyramid.normal[i0 + 1] = temp[1];
+    arrays_pyramid.normal[i0 + 2] = temp[2];
+    arrays_pyramid.normal[i1 * 3] = temp[0];
+    arrays_pyramid.normal[i1 * 3 + 1] = temp[1];
+    arrays_pyramid.normal[i1 * 3 + 2] = temp[2];
+    arrays_pyramid.normal[i2 * 3] = temp[0];
+    arrays_pyramid.normal[i2 * 3 + 1] = temp[1];
+    arrays_pyramid.normal[i2 * 3 + 2] = temp[2];
+    console.log(`normal: ${arrays_pyramid.normal}`);
+  }
 
   // for (let i = 0; i < arrays_pyramid.position.length; i = i + 9) {
   //   // cross(B-A, C-A)
@@ -731,37 +735,6 @@ function main() {
   //console.log(programInfo);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-  gl.useProgram(programInfo.program);
-  //var matrixLocation = gl.getUniformLocation(programInfo.program, "u_matrix");
-  var colorLocation = gl.getUniformLocation(programInfo.program, "u_color");
-  reverseLightDirectionLocation = gl.getUniformLocation(
-    programInfo.program,
-    "u_reverseLightDirection"
-  );
-  worldViewProjectionLocation = gl.getUniformLocation(
-    programInfo.program,
-    "u_worldViewProjection"
-  );
-  worldLocation = gl.getUniformLocation(programInfo.program, "u_world");
-
-  worldMatrix = m4.yRotation(degToRad(config.spin_x));
-  worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
-
-  gl.uniformMatrix4fv(
-    worldViewProjectionLocation,
-    false,
-    worldViewProjectionMatrix
-  );
-  gl.uniformMatrix4fv(worldLocation, false, worldMatrix);
-
-  // Set the matrix.
-  //gl.uniformMatrix4fv(matrixLocation, false, matrix);
-
-  // Set the color to use
-  gl.uniform4fv(colorLocation, [0.2, 1, 0.2, 1]); // green
-
-  // set the light direction.
-  gl.uniform3fv(reverseLightDirectionLocation, [0.5, 0.7, 1]);
 
   function degToRad(d) {
     return (d * Math.PI) / 180;
@@ -783,7 +756,7 @@ function main() {
   scene = makeNode(objeto);
 
   requestAnimationFrame(drawScene);
-
+  //console.log(programInfo);
   // Draw the scene.
 }
 function drawScene(time) {
@@ -795,7 +768,7 @@ function drawScene(time) {
   // Tell WebGL how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-  //gl.enable(gl.CULL_FACE);
+  gl.disable(gl.CULL_FACE);
   gl.enable(gl.DEPTH_TEST);
 
   // Compute the projection matrix
@@ -808,33 +781,12 @@ function drawScene(time) {
   up = [0, 1, 0];
   cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
-  var vao = gl.createVertexArray();
-  gl.bindVertexArray(vao);
-
   // Make a view matrix from the camera matrix.
   viewMatrix = m4.inverse(cameraMatrix);
 
   viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
-  worldMatrix = m4.xRotation(degToRad(config.spin_x));
-  worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
-  var worldInverseMatrix = m4.inverse(worldMatrix);
-  var worldInverseTransposeMatrix = m4.transpose(worldInverseMatrix);
-
-  // set the light direction.
-  gl.uniform3fv(reverseLightDirectionLocation, m4.normalize([0.5, 0.7, 1]));
-
-  // Set the matrices
-  gl.uniformMatrix4fv(
-    worldViewProjectionLocation,
-    false,
-    worldViewProjectionMatrix
-  );
-  gl.uniformMatrix4fv(
-    worldInverseTransposeLocation,
-    false,
-    worldInverseTransposeMatrix
-  );
+  var fRotationRadians = degToRad(config.spin_x);
 
   adjust;
   speed = 3;
@@ -856,6 +808,20 @@ function drawScene(time) {
       viewProjectionMatrix,
       object.worldMatrix
     );
+    object.drawInfo.uniforms.u_lightWorldPosition = [-3.5, -2.5, 1];
+
+    object.drawInfo.uniforms.u_world = m4.multiply(
+      object.worldMatrix,
+      m4.yRotation(fRotationRadians)
+    );
+
+    object.drawInfo.uniforms.u_worldInverseTranspose = m4.transpose(
+      m4.inverse(object.worldMatrix)
+    );
+
+    object.drawInfo.uniforms.u_viewWorldPosition = cameraPosition;
+
+    object.drawInfo.uniforms.u_shininess = 1;
   });
 
   // wireframe = false;
