@@ -48,15 +48,21 @@ var config = {
     // ]);
     // console.log(`arrays_pyramid.position: ${arrays_pyramid.position}`);
 
-    var novotri = [...a, ...b, ...d];
+    // var novotri = [...a, ...d, ...b];
+    var novotri = [...b, ...d, ...a];
+
     console.log(`novotri: ${novotri}`);
     arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
 
+    // novotri = [...b, ...d, ...c];
     novotri = [...c, ...d, ...b];
+
     console.log(`novotri: ${novotri}`);
     arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
 
-    novotri = [...c, ...a, ...d];
+    // novotri = [...c, ...d, ...a];
+    novotri = [...a, ...d, ...c];
+
     console.log(`novotri: ${novotri}`);
     arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
 
@@ -99,14 +105,14 @@ var config = {
   teste0: 5.8,
   teste1: 2.5,
   teste2: 2.1,
-  shininess: 2.5,
+  shininess: 1000.0,
   scalex: 1.0,
   scaley: 1.0,
   scalez: 1.0,
 };
 
 const moveVertice = function () {
-  var n = config.vertice * 3;
+  var n = config.vertice;
   var mapVertices = mapAllVertices(
     arrays_pyramid.position,
     arrays_pyramid.indices
@@ -201,8 +207,8 @@ const loadGUI = () => {
   folder_vertice.add(config, "vz", -10, 10, 0.1).onChange(function () {
     moveVertice();
   });
-  gui.add(config, "teste0", -10, 10, 0.1);
-  gui.add(config, "teste1", -10, 10, 0.1);
-  gui.add(config, "teste2", -10, 10, 0.1);
-  gui.add(config, "shininess", -10, 10, 0.1);
+  gui.add(config, "teste0", -20, 20, 0.1);
+  gui.add(config, "teste1", -20, 20, 0.1);
+  gui.add(config, "teste2", -20, 20, 0.1);
+  gui.add(config, "shininess", 0, 1000, 0.1);
 };

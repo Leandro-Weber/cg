@@ -133,8 +133,19 @@ function main() {
   twgl.setAttributePrefix("a_");
 
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
-
-  arrays_pyramid = arrays_cube4;
+  //console.log(arrays_cube5.position.reverse());
+  var buf = [];
+  for (let index = 0; index < arrays_cube5.position.length; index = index + 3) {
+    buf = [
+      arrays_cube5.position[index],
+      arrays_cube5.position[index + 1],
+      arrays_cube5.position[index + 2],
+      ...buf,
+    ];
+  }
+  console.log(`${buf}`);
+  arrays_pyramid = arrays_cube5;
+  //arrays_pyramid.position = buf;
 
   arrays_pyramid.barycentric = calculateBarycentric(
     arrays_pyramid.position.length
@@ -145,7 +156,7 @@ function main() {
     arrays_pyramid.indices
   );
 
-  //normalComIndice;
+  // normalComIndice();
   // normalSemIndice;
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
 
@@ -201,6 +212,7 @@ function main() {
   //console.log(programInfo);
   scene = makeNode(objeto);
   //temp = mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices);
+  console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
 
   requestAnimationFrame(drawScene);
   //console.log(programInfo);
@@ -215,7 +227,7 @@ function drawScene(time) {
   // Tell WebGL how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-  gl.disable(gl.CULL_FACE);
+  gl.enable(gl.CULL_FACE);
   gl.enable(gl.DEPTH_TEST);
 
   // Compute the projection matrix
@@ -239,9 +251,13 @@ function drawScene(time) {
   speed = 3;
   c = time * speed;
 
-  adjust = degToRad(time * config.spin_x);
+  // adjust = degToRad(time * config.spin_x);
+  adjust = degToRad(config.spin_x);
+
   nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
-  adjust = degToRad(time * config.spin_y);
+  // adjust = degToRad(time * config.spin_y);
+  adjust = degToRad(config.spin_y);
+
   nodeInfosByName["cubo0"].trs.rotation[1] = adjust;
   nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
   nodeInfosByName["cubo0"].trs.scale = [
