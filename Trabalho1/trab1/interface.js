@@ -25,49 +25,61 @@ var config = {
   triangulo: 0,
 
   criarVertice: function () {
-    console.log("indices");
-    console.log(arrays_pyramid.indices);
+    // console.log(`indices antes: ${arrays_pyramid.indices}`);
+    // console.log(`arrays_pyramid.position antes: ${arrays_pyramid.position}`);
     var n = config.triangulo * 3;
-    var inicio = arrays_pyramid.indices.slice(0, n);
-    var temp = arrays_pyramid.indices.slice(n, n + 3);
-    var resto = arrays_pyramid.indices.slice(
-      n + 3,
-      arrays_pyramid.indices.length
+    var inicio = arrays_pyramid.position.slice(0, n * 3);
+    var temp = arrays_pyramid.position.slice(n * 3, (n + 3) * 3);
+    var resto = arrays_pyramid.position.slice(
+      (n + 3) * 3,
+      arrays_pyramid.position.length
     );
-    var b = calculaMeioDoTrianguloIndices(temp);
-    var new_indice = arrays_pyramid.position.length / 3;
+    var newind = [];
+    arrays_pyramid.position = [...inicio, ...resto];
 
-    arrays_pyramid.position = new Float32Array([
-      ...arrays_pyramid.position,
-      ...b,
-    ]);
-    console.log("b");
-    console.log(arrays_pyramid.position);
-    var novotri = [
-      temp[0],
-      new_indice,
-      temp[1],
+    var a = temp.slice(0, 3);
+    var b = temp.slice(3, 6);
+    var c = temp.slice(6, 9);
+    var d = calculaMeioDoTriangulo([...a, ...b, ...c]);
 
-      temp[1],
-      new_indice,
-      temp[2],
+    // arrays_pyramid.position = new Float32Array([
+    //   ...arrays_pyramid.position,
+    //   ...d,
+    // ]);
+    // console.log(`arrays_pyramid.position: ${arrays_pyramid.position}`);
 
-      temp[2],
-      new_indice,
-      temp[0],
-    ];
-    console.log("novotri");
-    console.log(novotri);
+    var novotri = [...a, ...b, ...d];
+    console.log(`novotri: ${novotri}`);
+    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
 
-    arrays_pyramid.indices = new Uint16Array([...inicio, ...novotri, ...resto]);
-    console.log("indices");
-    console.log(arrays_pyramid.indices);
+    novotri = [...c, ...d, ...b];
+    console.log(`novotri: ${novotri}`);
+    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
 
-    console.log("positions");
-    console.log(arrays_pyramid.position);
+    novotri = [...c, ...a, ...d];
+    console.log(`novotri: ${novotri}`);
+    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
 
-    // console.log(arrays_pyramid.position);
-    // console.log(arrays_pyramid.indices);
+    console.log(`position depois dos triangulos: ${arrays_pyramid.position}`);
+    console.log(arrays_pyramid.position.length);
+
+    for (let index = 0; index < arrays_pyramid.position.length / 3; index++) {
+      newind = [...newind, index];
+    }
+    arrays_pyramid.indices = newind;
+
+    console.log(`indices: ${arrays_pyramid.indices}`);
+
+    // console.log(`arrays_pyramid.position: ${arrays_pyramid.position}`);
+
+    arrays_pyramid.normal = [];
+    for (let index = 0; index < arrays_pyramid.normal.length; index++) {
+      arrays_pyramid.normal = [...arrays_pyramid.normal, 0];
+    }
+    arrays_pyramid.normal = calculateNormal(
+      arrays_pyramid.position,
+      arrays_pyramid.indices
+    );
     cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
     objectsToDraw = [];
@@ -88,13 +100,33 @@ var config = {
   teste1: 2.5,
   teste2: 2.1,
   shininess: 2.5,
+  scalex: 1.0,
+  scaley: 1.0,
+  scalez: 1.0,
 };
 
 const moveVertice = function () {
   var n = config.vertice * 3;
-  arrays_pyramid.position[n] = config.vx;
-  arrays_pyramid.position[n + 1] = config.vy;
-  arrays_pyramid.position[n + 2] = config.vz;
+  var mapVertices = mapAllVertices(
+    arrays_pyramid.position,
+    arrays_pyramid.indices
+  );
+  var temp = mapVertices[n];
+  console.log(temp);
+
+  for (let index = 0; index < temp.length; index++) {
+    arrays_pyramid.position[temp[index] * 3] = config.vx;
+    arrays_pyramid.position[temp[index] * 3 + 1] = config.vy;
+    arrays_pyramid.position[temp[index] * 3 + 2] = config.vz;
+  }
+
+  // arrays_pyramid.position[n] = config.vx;
+  // arrays_pyramid.position[n + 1] = config.vy;
+  // arrays_pyramid.position[n + 2] = config.vz;
+  arrays_pyramid.normal = calculateNormal(
+    arrays_pyramid.position,
+    arrays_pyramid.indices
+  );
   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
   objectsToDraw = [];
@@ -127,6 +159,10 @@ const loadGUI = () => {
 
   folder_matrix.add(config, "spin_x", -1000, 1000, 2);
   folder_matrix.add(config, "spin_y", -1000, 1000, 2);
+
+  folder_matrix.add(config, "scalex", -10, 10, 0.1);
+  folder_matrix.add(config, "scaley", -10, 10, 0.1);
+  folder_matrix.add(config, "scalez", -10, 10, 0.1);
 
   gui.add(config, "addCaixa");
   folder_camera.add(config, "camera_x", -200, 200, 1);

@@ -79,11 +79,7 @@ var speed;
 var c;
 var fieldOfViewRadians;
 var reverseLightDirectionLocation;
-var worldViewProjectionLocation;
-var worldLocation;
-var worldInverseTransposeLocation;
-var worldViewProjectionMatrix;
-var worldMatrix;
+var temp;
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -138,16 +134,18 @@ function main() {
 
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
 
-  arrays_pyramid = arrays_cube2;
+  arrays_pyramid = arrays_cube4;
+
   arrays_pyramid.barycentric = calculateBarycentric(
     arrays_pyramid.position.length
   );
 
-  // arrays_pyramid.normal = calculateNormal(
-  //   arrays_pyramid.position,
-  //   arrays_pyramid.indices
-  // );
-  normalComIndice;
+  arrays_pyramid.normal = calculateNormal(
+    arrays_pyramid.position,
+    arrays_pyramid.indices
+  );
+
+  //normalComIndice;
   // normalSemIndice;
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
 
@@ -202,6 +200,7 @@ function main() {
   };
   //console.log(programInfo);
   scene = makeNode(objeto);
+  //temp = mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices);
 
   requestAnimationFrame(drawScene);
   //console.log(programInfo);
@@ -245,6 +244,11 @@ function drawScene(time) {
   adjust = degToRad(time * config.spin_y);
   nodeInfosByName["cubo0"].trs.rotation[1] = adjust;
   nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
+  nodeInfosByName["cubo0"].trs.scale = [
+    config.scalex,
+    config.scaley,
+    config.scalez,
+  ];
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph

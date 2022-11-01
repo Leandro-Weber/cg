@@ -50,7 +50,12 @@ void main() {
     specular = pow(dot(normal, halfVector), u_shininess);
   }
   outColor = u_color;
+//   if(light<0.2){
+//   outColor.rgb *= (light+0.2);
+// }
+//   else{
   outColor.rgb *= light;
+  //}
   outColor.rgb += specular;
 }
 `;
