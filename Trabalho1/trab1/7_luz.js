@@ -80,6 +80,7 @@ var c;
 var fieldOfViewRadians;
 var reverseLightDirectionLocation;
 var temp;
+var listOfVertices = [];
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -94,6 +95,7 @@ function makeNode(nodeDescription) {
     node: node,
   };
   trs.translation = nodeDescription.translation || trs.translation;
+  trs.rotation = nodeDescription.rotation || trs.rotation;
   if (nodeDescription.draw !== false) {
     node.drawInfo = {
       uniforms: {
@@ -106,12 +108,11 @@ function makeNode(nodeDescription) {
 
     objectsToDraw.push(node.drawInfo);
     objects.push(node);
-
-    makeNodes(nodeDescription.children).forEach(function (child) {
-      child.setParent(node);
-    });
-    return node;
   }
+  makeNodes(nodeDescription.children).forEach(function (child) {
+    child.setParent(node);
+  });
+  return node;
 }
 
 function makeNodes(nodeDescriptions) {
@@ -126,7 +127,7 @@ function main() {
     return;
   }
 
-  loadGUI(gl);
+  // loadGUI(gl);
 
   // Tell the twgl to match position with a_position, n
   // normal with a_normal etc..
@@ -161,6 +162,8 @@ function main() {
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
 
   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+  listOfVertices = arrays_pyramid.indices;
 
   // console.log(calculaMeioDoTrianguloIndices([0, 3, 2]));
   // console.log(arrays_pyramid.position[0 * 3 + 1]);
@@ -205,14 +208,25 @@ function main() {
 
   // Let's make all the nodes
   objeto = {
-    name: "cubo0",
-    translation: [0, 0, 0],
-    children: [],
+    name: "Center of the world",
+    draw: false,
+    children: [
+      {
+        name: "cubo0",
+        draw: true,
+        translation: [0, 0, 0],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        //bufferInfo: cubeBufferInfo,
+        //vertexArray: cubeVAO,
+        children: [],
+      },
+    ],
   };
-  //console.log(programInfo);
+  console.log(objeto);
   scene = makeNode(objeto);
   //temp = mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices);
   console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
+  cameraPosition = [4, 4, 10];
 
   requestAnimationFrame(drawScene);
   //console.log(programInfo);
@@ -223,6 +237,10 @@ function drawScene(time) {
   teste = time;
   config.time = config.time;
   twgl.resizeCanvasToDisplaySize(gl.canvas);
+
+  listOfVertices = arrays_pyramid.indices;
+
+  if (gui == null) loadGUI(gl);
 
   // Tell WebGL how to convert from clip space to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -235,7 +253,6 @@ function drawScene(time) {
   var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
   // Compute the camera's matrix using look at.
-  cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
   target = [config.target, 0, 0];
   up = [0, 1, 0];
   cameraMatrix = m4.lookAt(cameraPosition, target, up);
@@ -249,22 +266,8 @@ function drawScene(time) {
 
   adjust;
   speed = 3;
-  c = time * speed;
 
-  // adjust = degToRad(time * config.spin_x);
-  adjust = degToRad(config.spin_x);
-
-  nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
-  // adjust = degToRad(time * config.spin_y);
-  adjust = degToRad(config.spin_y);
-
-  nodeInfosByName["cubo0"].trs.rotation[1] = adjust;
-  nodeInfosByName["cubo0"].trs.translation = [config.x, config.y, config.z];
-  nodeInfosByName["cubo0"].trs.scale = [
-    config.scalex,
-    config.scaley,
-    config.scalez,
-  ];
+  computeMatrix(nodeInfosByName["cubo0"], config);
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
@@ -277,9 +280,9 @@ function drawScene(time) {
       object.worldMatrix
     );
     object.drawInfo.uniforms.u_lightWorldPosition = [
-      config.teste0,
-      config.teste1,
-      config.teste2,
+      config.luzx,
+      config.luzy,
+      config.luzz,
     ];
 
     object.drawInfo.uniforms.u_world = m4.multiply(
@@ -295,43 +298,6 @@ function drawScene(time) {
 
     object.drawInfo.uniforms.u_shininess = config.shininess;
   });
-
-  // wireframe = false;
-  // programInfo = twgl.createProgramInfo(gl, [vs, fs]);
-
-  // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-
-  // objectsToDraw = [];
-  // objects = [];
-  // nodeInfosByName = {};
-  // scene = makeNode(objeto);
-  // scene.updateWorldMatrix();
-  // objects.forEach(function (object) {
-  //   object.drawInfo.uniforms.u_matrix = m4.multiply(
-  //     viewProjectionMatrix,
-  //     object.worldMatrix
-  //   );
-  // });
-  // //twgl.drawObjectList(gl, objectsToDraw);
-
-  // wireframe = true;
-  // programInfo = twgl.createProgramInfo(gl, [vsw, fsw]);
-
-  // VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
-
-  // //objectsToDraw = [];
-  // //objects = [];
-  // //nodeInfosByName = {};
-  // scene = makeNode(objeto);
-  // nodeInfosByName["cubo0"].trs.rotation[0] = adjust;
-  // scene.updateWorldMatrix();
-
-  // objects.forEach(function (object) {
-  //   object.drawInfo.uniforms.u_matrix = m4.multiply(
-  //     viewProjectionMatrix,
-  //     object.worldMatrix
-  //   );
-  // });
 
   // ------ Draw the objects --------
 

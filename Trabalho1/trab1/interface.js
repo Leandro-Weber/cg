@@ -6,7 +6,7 @@ var config = {
   spin_x: 0,
   spin_y: 0,
   camera_x: 4,
-  camera_y: 3.5,
+  camera_y: 4,
   camera_z: 10,
 
   addCaixa: function () {
@@ -93,8 +93,8 @@ var config = {
     nodeInfosByName = {};
     scene = makeNode(objeto);
 
-    gui.updateDisplay();
-    //drawScene();
+    gui.destroy();
+    gui = null;
   },
   //time: 0.0,
   target: 3.5,
@@ -103,12 +103,20 @@ var config = {
   vz: 0,
   vertice: 0,
   teste0: 5.8,
-  teste1: 2.5,
-  teste2: 2.1,
-  shininess: 1000.0,
+  teste1: 4.5,
+  teste2: 8.1,
+
   scalex: 1.0,
   scaley: 1.0,
   scalez: 1.0,
+  listVertices: 1,
+  luzx: 5.8,
+  luzy: 4.5,
+  luzz: 8.1,
+  shininess: 20.0,
+  camera_1: true,
+  camera_2: false,
+  camera_3: false,
 };
 
 const moveVertice = function () {
@@ -144,11 +152,13 @@ const moveVertice = function () {
 var folder_vertice;
 var folder_camera;
 var folder_matrix;
+var folder_luz;
 
 const loadGUI = () => {
   gui = new dat.GUI();
   folder_vertice = gui.addFolder("Manipular vertices");
   folder_camera = gui.addFolder("Manipular cameras");
+  folder_luz = gui.addFolder("Manipular luzes");
   folder_matrix = gui.addFolder("Manipular matrizes");
   folder_vertice.open();
   folder_matrix
@@ -171,9 +181,15 @@ const loadGUI = () => {
   folder_matrix.add(config, "scalez", -10, 10, 0.1);
 
   gui.add(config, "addCaixa");
-  folder_camera.add(config, "camera_x", -200, 200, 1);
-  folder_camera.add(config, "camera_y", -200, 200, 1);
-  folder_camera.add(config, "camera_z", -200, 200, 1);
+  folder_camera.add(config, "camera_x", -200, 200, 0.5).onChange(function () {
+    cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+  });
+  folder_camera.add(config, "camera_y", -200, 200, 0.5).onChange(function () {
+    cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+  });
+  folder_camera.add(config, "camera_z", -200, 200, 0.5).onChange(function () {
+    cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
+  });
 
   folder_vertice.add(config, "triangulo", 0, 20, 1);
   folder_vertice.add(config, "criarVertice");
@@ -186,7 +202,8 @@ const loadGUI = () => {
   //     gui.updateDisplay();
   //   });
   folder_camera.add(config, "target", -5, 5, 0.01);
-  folder_vertice.add(config, "vertice").onChange(function () {
+
+  folder_vertice.add(config, "vertice", listOfVertices).onChange(function () {
     const temp = arrays_pyramid.position.slice(
       config.vertice * 3,
       config.vertice * 3 + 3
@@ -198,6 +215,18 @@ const loadGUI = () => {
 
     gui.updateDisplay();
   });
+  // folder_vertice.add(config, "vertice").onChange(function () {
+  //   const temp = arrays_pyramid.position.slice(
+  //     config.vertice * 3,
+  //     config.vertice * 3 + 3
+  //   );
+
+  //   config.vx = temp[0];
+  //   config.vy = temp[1];
+  //   config.vz = temp[2];
+
+  //   gui.updateDisplay();
+  // });
   folder_vertice.add(config, "vx", -10, 10, 0.1).onChange(function () {
     moveVertice();
   });
@@ -207,8 +236,44 @@ const loadGUI = () => {
   folder_vertice.add(config, "vz", -10, 10, 0.1).onChange(function () {
     moveVertice();
   });
-  gui.add(config, "teste0", -20, 20, 0.1);
-  gui.add(config, "teste1", -20, 20, 0.1);
-  gui.add(config, "teste2", -20, 20, 0.1);
-  gui.add(config, "shininess", 0, 1000, 0.1);
+  folder_luz.add(config, "luzx", -20, 20, 0.1);
+  folder_luz.add(config, "luzy", -20, 20, 0.1);
+  folder_luz.add(config, "luzz", -20, 20, 0.1);
+  folder_luz.add(config, "shininess", 0, 20, 0.1);
+  folder_camera
+    .add(config, "camera_1")
+    .listen()
+    .onChange(function () {
+      config.camera_2 = false;
+      config.camera_3 = false;
+      config.camera_x = 4;
+      config.camera_y = 4;
+      config.camera_z = 10;
+      cameraPosition = [4, 4, 10];
+      gui.updateDisplay();
+    });
+  folder_camera
+    .add(config, "camera_2")
+    .listen()
+    .onChange(function () {
+      config.camera_1 = false;
+      config.camera_3 = false;
+      config.camera_x = -20;
+      config.camera_y = 4;
+      config.camera_z = 10;
+      cameraPosition = [-20, 4, 10];
+      gui.updateDisplay();
+    });
+  folder_camera
+    .add(config, "camera_3")
+    .listen()
+    .onChange(function () {
+      config.camera_1 = false;
+      config.camera_2 = false;
+      config.camera_x = 4;
+      config.camera_y = 4;
+      config.camera_z = 35;
+      cameraPosition = [4, 4, 35];
+      gui.updateDisplay();
+    });
 };
