@@ -55,6 +55,11 @@ const computeMatrixLuz = (matrix, config) => {
   matrix.trs.scale = [0.05, 0.05, 0.05];
 };
 
+const computeMatrixCuboVertice = (matrix, config) => {
+  matrix.trs.translation = [config.vx, config.vy, config.vz];
+  matrix.trs.rotation = [degToRad(0), degToRad(0), degToRad(0)];
+  matrix.trs.scale = [0.1, 0.1, 0.1];
+};
 const convertToZeroOne = (old_value, old_min, old_max) => {
   return (old_value - old_min) / (old_max - old_min);
 };

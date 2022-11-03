@@ -236,9 +236,9 @@ const loadGUI = () => {
   folder_vertice.add(config, "vz", -10, 10, 0.1).onChange(function () {
     moveVertice();
   });
-  folder_luz.add(config, "luzx", -20, 20, 0.1);
-  folder_luz.add(config, "luzy", -20, 20, 0.1);
-  folder_luz.add(config, "luzz", -20, 20, 0.1);
+  folder_luz.add(config, "luzx", -20, 20, 0.01);
+  folder_luz.add(config, "luzy", -20, 20, 0.01);
+  folder_luz.add(config, "luzz", -20, 20, 0.01);
   folder_luz.add(config, "shininess", 0, 20, 0.1);
   folder_camera
     .add(config, "camera_1")

@@ -167,12 +167,6 @@ function main() {
   // normalSemIndice;
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
 
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
-
-  listOfVertices = arrays_pyramid.indices;
-
-  // console.log(calculaMeioDoTrianguloIndices([0, 3, 2]));
-  // console.log(arrays_pyramid.position[0 * 3 + 1]);
   // console.log("a");
   // Dado um array como:
   //   var arrays = {
@@ -192,8 +186,8 @@ function main() {
   //     texcoord: { buffer: WebGLBuffer, numComponents: 2, },
   //   },
   // };
-  //console.log(cubeBufferInfo);
-  //console.log(arrays_cube.indices.length);
+
+  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
   // setup GLSL program
 
@@ -201,6 +195,8 @@ function main() {
   //console.log(programInfo);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
+
+  listOfVertices = arrays_pyramid.indices;
 
   function degToRad(d) {
     return (d * Math.PI) / 180;
@@ -226,13 +222,20 @@ function main() {
         //vertexArray: cubeVAO,
         children: [
           {
-            name: "light",
+            name: "cuboVertice0",
             draw: true,
-            translation: [config.luzx, config.luzy, config.luzz],
+            translation: [0, 0, 0],
             rotation: [degToRad(0), degToRad(0), degToRad(0)],
             children: [],
           },
         ],
+      },
+      {
+        name: "light",
+        draw: true,
+        translation: [config.luzx, config.luzy, config.luzz],
+        rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        children: [],
       },
     ],
   };
@@ -242,6 +245,14 @@ function main() {
   console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
   cameraPosition = [4, 4, 10];
 
+  const temp = arrays_pyramid.position.slice(
+    config.vertice * 3,
+    config.vertice * 3 + 3
+  );
+
+  config.vx = temp[0];
+  config.vy = temp[1];
+  config.vz = temp[2];
   requestAnimationFrame(drawScene);
   //console.log(programInfo);
   // Draw the scene.
@@ -280,9 +291,10 @@ function drawScene(time) {
 
   adjust;
   speed = 3;
-  console.log(nodeInfosByName);
+  //console.log(nodeInfosByName);
   computeMatrix(nodeInfosByName["cubo0"], config);
   computeMatrixLuz(nodeInfosByName["light"], config);
+  computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
   //nodeInfosByName
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
@@ -306,6 +318,7 @@ function drawScene(time) {
       convertToZeroOne(palette["corLuz"][1], 0, 255),
       convertToZeroOne(palette["corLuz"][2], 0, 255),
     ];
+
     object.drawInfo.uniforms.u_color = [
       convertToZeroOne(palette["corCubo"][0], 0, 255),
       convertToZeroOne(palette["corCubo"][1], 0, 255),
@@ -314,7 +327,7 @@ function drawScene(time) {
     ];
     // console.log(object.drawInfo.uniforms.u_lightColor);
     // console.log(object.drawInfo.uniforms.u_color);
-    object.drawInfo.uniforms.u_specularColor = [1, 1, 1];
+    object.drawInfo.uniforms.u_specularColor = [0.5, 1, 0.5];
     object.drawInfo.uniforms.u_world = m4.multiply(
       object.worldMatrix,
       m4.yRotation(fRotationRadians)
