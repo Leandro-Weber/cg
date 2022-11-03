@@ -276,4 +276,6 @@ const loadGUI = () => {
       cameraPosition = [4, 4, 35];
       gui.updateDisplay();
     });
+  gui.addColor(palette, "corLuz");
+  gui.addColor(palette, "corCubo");
 };

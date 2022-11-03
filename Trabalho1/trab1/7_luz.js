@@ -81,6 +81,12 @@ var fieldOfViewRadians;
 var reverseLightDirectionLocation;
 var temp;
 var listOfVertices = [];
+var palette = {
+  color1: "#FF0000", // CSS string
+  corLuz: [255, 255, 255], // RGB array
+  corCubo: [255, 0, 0, 1], // RGB with alpha
+  color4: { h: 350, s: 0.9, v: 0.3 }, // Hue, saturation, value
+};
 
 //CAMERA VARIABLES
 var cameraPosition;
@@ -99,7 +105,7 @@ function makeNode(nodeDescription) {
   if (nodeDescription.draw !== false) {
     node.drawInfo = {
       uniforms: {
-        u_color: [0.2, 1, 0.2, 1],
+        u_color: [0.4, 0.4, 0.4, 1],
       },
       programInfo: programInfo,
       bufferInfo: cubeBufferInfo,
@@ -218,7 +224,15 @@ function main() {
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
         //bufferInfo: cubeBufferInfo,
         //vertexArray: cubeVAO,
-        children: [],
+        children: [
+          {
+            name: "light",
+            draw: true,
+            translation: [config.luzx, config.luzy, config.luzz],
+            rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            children: [],
+          },
+        ],
       },
     ],
   };
@@ -266,8 +280,10 @@ function drawScene(time) {
 
   adjust;
   speed = 3;
-
+  console.log(nodeInfosByName);
   computeMatrix(nodeInfosByName["cubo0"], config);
+  computeMatrixLuz(nodeInfosByName["light"], config);
+  //nodeInfosByName
 
   //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
@@ -285,6 +301,20 @@ function drawScene(time) {
       config.luzz,
     ];
 
+    object.drawInfo.uniforms.u_lightColor = [
+      convertToZeroOne(palette["corLuz"][0], 0, 255),
+      convertToZeroOne(palette["corLuz"][1], 0, 255),
+      convertToZeroOne(palette["corLuz"][2], 0, 255),
+    ];
+    object.drawInfo.uniforms.u_color = [
+      convertToZeroOne(palette["corCubo"][0], 0, 255),
+      convertToZeroOne(palette["corCubo"][1], 0, 255),
+      convertToZeroOne(palette["corCubo"][2], 0, 255),
+      palette["corCubo"][3],
+    ];
+    // console.log(object.drawInfo.uniforms.u_lightColor);
+    // console.log(object.drawInfo.uniforms.u_color);
+    object.drawInfo.uniforms.u_specularColor = [1, 1, 1];
     object.drawInfo.uniforms.u_world = m4.multiply(
       object.worldMatrix,
       m4.yRotation(fRotationRadians)

@@ -49,3 +49,12 @@ const computeMatrix = (matrix, config) => {
   ];
   matrix.trs.scale = [config.scalex, config.scaley, config.scalez];
 };
+const computeMatrixLuz = (matrix, config) => {
+  matrix.trs.translation = [config.luzx, config.luzy, config.luzz];
+  matrix.trs.rotation = [degToRad(0), degToRad(0), degToRad(0)];
+  matrix.trs.scale = [0.05, 0.05, 0.05];
+};
+
+const convertToZeroOne = (old_value, old_min, old_max) => {
+  return (old_value - old_min) / (old_max - old_min);
+};

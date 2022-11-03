@@ -37,6 +37,9 @@ in vec3 v_surfaceToView;
 uniform vec4 u_color;
 uniform float u_shininess;
 
+uniform vec3 u_lightColor;
+uniform vec3 u_specularColor;
+
 out vec4 outColor;
 
 void main() {
@@ -50,13 +53,9 @@ void main() {
     specular = pow(dot(normal, halfVector), u_shininess);
   }
   outColor = u_color;
-//   if(light<0.2){
-//   outColor.rgb *= (light+0.2);
-// }
-//   else{
-  outColor.rgb *= light;
-  //}
-  outColor.rgb += specular;
+
+  outColor.rgb *= light * u_lightColor;
+  outColor.rgb += specular * u_specularColor;;
 }
 `;
 
