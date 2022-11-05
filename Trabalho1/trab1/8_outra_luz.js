@@ -88,8 +88,8 @@ var palette = {
 };
 
 var arrLuz = [
-  new Luz([4, 0, 0], [255, 255, 255], [0, 0, 0], 300),
-  new Luz([-4, 0, 0], [255, 255, 255], [0, 0, 0], 300),
+  new Luz([4, 0, 0], [255, 255, 255], [255, 255, 255], 300),
+  new Luz([-4, 0, 0], [255, 255, 255], [255, 255, 255], 300),
   new Luz([5, 4, 8], [255, 255, 255], [255, 255, 255], 300),
 ];
 
@@ -196,7 +196,7 @@ function main() {
 
   // setup GLSL program
 
-  programInfo = twgl.createProgramInfo(gl, [vs, fs]);
+  programInfo = twgl.createProgramInfo(gl, [vs3luz, fs3luz]);
   //console.log(programInfo);
 
   VAO = twgl.createVAOFromBufferInfo(gl, programInfo, cubeBufferInfo);
@@ -254,27 +254,37 @@ function main() {
   console.log(objeto);
   scene = makeNode(objeto);
   objects.forEach(function (object) {
-    object.drawInfo.uniforms.u_lightWorldPosition = [
+    object.drawInfo.uniforms.u_lightWorldPosition0 = [
       arrLuz[0].position.x,
       arrLuz[0].position.y,
       arrLuz[0].position.z,
     ];
-    // object.drawInfo.uniforms.u_lightWorldPosition1 = [
-    //   arrLuz[1].position.x,
-    //   arrLuz[1].position.y,
-    //   arrLuz[1].position.z,
-    // ];
+    object.drawInfo.uniforms.u_lightWorldPosition1 = [
+      arrLuz[1].position.x,
+      arrLuz[1].position.y,
+      arrLuz[1].position.z,
+    ];
+    object.drawInfo.uniforms.u_lightWorldPosition2 = [
+      arrLuz[2].position.x,
+      arrLuz[2].position.y,
+      arrLuz[2].position.z,
+    ];
 
-    object.drawInfo.uniforms.u_lightColor = [
+    object.drawInfo.uniforms.u_lightColor0 = [
       convertToZeroOne(arrLuz[0].color[0], 0, 255),
       convertToZeroOne(arrLuz[0].color[1], 0, 255),
       convertToZeroOne(arrLuz[0].color[2], 0, 255),
     ];
-    // object.drawInfo.uniforms.u_lightColor1 = [
-    //   convertToZeroOne(arrLuz[1].color[0], 0, 255),
-    //   convertToZeroOne(arrLuz[1].color[1], 0, 255),
-    //   convertToZeroOne(arrLuz[1].color[2], 0, 255),
-    // ];
+    object.drawInfo.uniforms.u_lightColor1 = [
+      convertToZeroOne(arrLuz[1].color[0], 0, 255),
+      convertToZeroOne(arrLuz[1].color[1], 0, 255),
+      convertToZeroOne(arrLuz[1].color[2], 0, 255),
+    ];
+    object.drawInfo.uniforms.u_lightColor2 = [
+      convertToZeroOne(arrLuz[2].color[0], 0, 255),
+      convertToZeroOne(arrLuz[2].color[1], 0, 255),
+      convertToZeroOne(arrLuz[2].color[2], 0, 255),
+    ];
 
     object.drawInfo.uniforms.u_color = [
       convertToZeroOne(palette["corCubo"][0], 0, 255),
@@ -282,8 +292,22 @@ function main() {
       convertToZeroOne(palette["corCubo"][2], 0, 255),
       1,
     ];
-    object.drawInfo.uniforms.u_specularColor = arrLuz[0].spec;
-    // object.drawInfo.uniforms.u_specularColor1 = arrLuz[1].spec;
+
+    object.drawInfo.uniforms.u_specularColor0 = [
+      convertToZeroOne(arrLuz[0].spec[0], 0, 255),
+      convertToZeroOne(arrLuz[0].spec[1], 0, 255),
+      convertToZeroOne(arrLuz[0].spec[2], 0, 255),
+    ];
+    object.drawInfo.uniforms.u_specularColor1 = [
+      convertToZeroOne(arrLuz[1].spec[0], 0, 255),
+      convertToZeroOne(arrLuz[1].spec[1], 0, 255),
+      convertToZeroOne(arrLuz[1].spec[2], 0, 255),
+    ];
+    object.drawInfo.uniforms.u_specularColor2 = [
+      convertToZeroOne(arrLuz[2].spec[0], 0, 255),
+      convertToZeroOne(arrLuz[2].spec[1], 0, 255),
+      convertToZeroOne(arrLuz[2].spec[2], 0, 255),
+    ];
   });
   //temp = mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices);
   console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
@@ -346,7 +370,7 @@ function drawScene(time) {
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();
   //console.log(arrLuz[0].position);
-  console.log(cameraPosition);
+  //console.log(cameraPosition);
 
   // Compute all the matrices for rendering
   objects.forEach(function (object) {
@@ -354,27 +378,37 @@ function drawScene(time) {
       viewProjectionMatrix,
       object.worldMatrix
     );
-    object.drawInfo.uniforms.u_lightWorldPosition = [
+    object.drawInfo.uniforms.u_lightWorldPosition0 = [
       arrLuz[0].position.x,
       arrLuz[0].position.y,
       arrLuz[0].position.z,
     ];
-    // object.drawInfo.uniforms.u_lightWorldPosition1 = [
-    //   arrLuz[1].position.x,
-    //   arrLuz[1].position.y,
-    //   arrLuz[1].position.z,
-    // ];
+    object.drawInfo.uniforms.u_lightWorldPosition1 = [
+      arrLuz[1].position.x,
+      arrLuz[1].position.y,
+      arrLuz[1].position.z,
+    ];
+    object.drawInfo.uniforms.u_lightWorldPosition2 = [
+      arrLuz[2].position.x,
+      arrLuz[2].position.y,
+      arrLuz[2].position.z,
+    ];
 
-    object.drawInfo.uniforms.u_lightColor = [
+    object.drawInfo.uniforms.u_lightColor0 = [
       convertToZeroOne(arrLuz[0].color[0], 0, 255),
       convertToZeroOne(arrLuz[0].color[1], 0, 255),
       convertToZeroOne(arrLuz[0].color[2], 0, 255),
     ];
-    // object.drawInfo.uniforms.u_lightColor1 = [
-    //   convertToZeroOne(arrLuz[1].color[0], 0, 255),
-    //   convertToZeroOne(arrLuz[1].color[1], 0, 255),
-    //   convertToZeroOne(arrLuz[1].color[2], 0, 255),
-    // ];
+    object.drawInfo.uniforms.u_lightColor1 = [
+      convertToZeroOne(arrLuz[1].color[0], 0, 255),
+      convertToZeroOne(arrLuz[1].color[1], 0, 255),
+      convertToZeroOne(arrLuz[1].color[2], 0, 255),
+    ];
+    object.drawInfo.uniforms.u_lightColor2 = [
+      convertToZeroOne(arrLuz[2].color[0], 0, 255),
+      convertToZeroOne(arrLuz[2].color[1], 0, 255),
+      convertToZeroOne(arrLuz[2].color[2], 0, 255),
+    ];
 
     object.drawInfo.uniforms.u_color = [
       convertToZeroOne(palette["corCubo"][0], 0, 255),
@@ -384,20 +418,29 @@ function drawScene(time) {
     ];
     // console.log(object.drawInfo.uniforms.u_lightColor);
     // console.log(object.drawInfo.uniforms.u_color);
-    object.drawInfo.uniforms.u_specularColor = [
+    object.drawInfo.uniforms.u_specularColor0 = [
       convertToZeroOne(arrLuz[0].spec[0], 0, 255),
       convertToZeroOne(arrLuz[0].spec[1], 0, 255),
       convertToZeroOne(arrLuz[0].spec[2], 0, 255),
     ];
-    // object.drawInfo.uniforms.u_specularColor1 = [
-    //   convertToZeroOne(arrLuz[1].spec[0], 0, 255),
-    //   convertToZeroOne(arrLuz[1].spec[1], 0, 255),
-    //   convertToZeroOne(arrLuz[1].spec[2], 0, 255),
-    // ];
-    // object.drawInfo.uniforms.u_world = m4.multiply(
-    //   object.worldMatrix,
-    //   m4.yRotation(fRotationRadians)
-    // );
+    object.drawInfo.uniforms.u_specularColor1 = [
+      convertToZeroOne(arrLuz[1].spec[0], 0, 255),
+      convertToZeroOne(arrLuz[1].spec[1], 0, 255),
+      convertToZeroOne(arrLuz[1].spec[2], 0, 255),
+    ];
+    object.drawInfo.uniforms.u_specularColor2 = [
+      convertToZeroOne(arrLuz[2].spec[0], 0, 255),
+      convertToZeroOne(arrLuz[2].spec[1], 0, 255),
+      convertToZeroOne(arrLuz[2].spec[2], 0, 255),
+    ];
+
+    object.drawInfo.uniforms.u_color = [
+      convertToZeroOne(palette["corCubo"][0], 0, 255),
+      convertToZeroOne(palette["corCubo"][1], 0, 255),
+      convertToZeroOne(palette["corCubo"][2], 0, 255),
+      1,
+    ];
+    object.drawInfo.uniforms.u_world = object.worldMatrix;
 
     object.drawInfo.uniforms.u_worldInverseTranspose = m4.transpose(
       m4.inverse(object.worldMatrix)
@@ -406,10 +449,6 @@ function drawScene(time) {
     object.drawInfo.uniforms.u_viewWorldPosition = cameraPosition;
 
     object.drawInfo.uniforms.u_shininess = config.shininess;
-    object.drawInfo.uniforms.u_world = m4.multiply(
-      object.worldMatrix,
-      m4.yRotation(degToRad(0))
-    );
   });
 
   // ------ Draw the objects --------

@@ -54,6 +54,11 @@ const computeMatrixLuz = (matrix, config) => {
   matrix.trs.rotation = [degToRad(0), degToRad(0), degToRad(0)];
   matrix.trs.scale = [0.05, 0.05, 0.05];
 };
+const computeMatrixLuz2 = (matrix, config) => {
+  matrix.trs.translation = [4, 0, 0];
+  matrix.trs.rotation = [degToRad(0), degToRad(0), degToRad(0)];
+  matrix.trs.scale = [0.05, 0.05, 0.05];
+};
 
 const computeMatrixCuboVertice = (matrix, config) => {
   matrix.trs.translation = [config.vx, config.vy, config.vz];
@@ -63,3 +68,26 @@ const computeMatrixCuboVertice = (matrix, config) => {
 const convertToZeroOne = (old_value, old_min, old_max) => {
   return (old_value - old_min) / (old_max - old_min);
 };
+
+class Luz {
+  constructor(position, color, spec, shine) {
+    this.position = {
+      x: position[0],
+      y: position[1],
+      z: position[2],
+    };
+
+    this.color = color;
+    this.spec = spec;
+
+    this.shine = shine;
+  }
+
+  // computeMatrix() {
+  //     let cameraMatrix = m4.lookAt(convertObjectToArray(this.cameraPosition), convertObjectToArray(this.target), this.up)
+
+  //     let viewMatrix = m4.inverse(cameraMatrix);
+
+  //     return viewMatrix
+  // }
+}

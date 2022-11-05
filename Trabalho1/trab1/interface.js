@@ -113,10 +113,11 @@ var config = {
   luzx: 5.8,
   luzy: 4.5,
   luzz: 8.1,
-  shininess: 20.0,
+  shininess: 300.0,
   camera_1: true,
   camera_2: false,
   camera_3: false,
+  luzIndex: 0,
 };
 
 const moveVertice = function () {
@@ -160,7 +161,7 @@ const loadGUI = () => {
   folder_camera = gui.addFolder("Manipular cameras");
   folder_luz = gui.addFolder("Manipular luzes");
   folder_matrix = gui.addFolder("Manipular matrizes");
-  folder_vertice.open();
+  folder_luz.open();
   folder_matrix
     .add(config, "rotate", 0, 360, 0.5)
     .listen()
@@ -236,10 +237,31 @@ const loadGUI = () => {
   folder_vertice.add(config, "vz", -10, 10, 0.1).onChange(function () {
     moveVertice();
   });
-  folder_luz.add(config, "luzx", -20, 20, 0.01);
-  folder_luz.add(config, "luzy", -20, 20, 0.01);
-  folder_luz.add(config, "luzz", -20, 20, 0.01);
-  folder_luz.add(config, "shininess", 0, 20, 0.1);
+  folder_luz.add(config, "luzIndex", listOfLights).onChange(function () {
+    config.luzx = arrLuz[config.luzIndex].position.x;
+    config.luzy = arrLuz[config.luzIndex].position.y;
+    config.luzz = arrLuz[config.luzIndex].position.z;
+    palette.corLuz = arrLuz[config.luzIndex].color;
+    palette.corSpec = arrLuz[config.luzIndex].spec;
+
+    gui.updateDisplay();
+  });
+  folder_luz.add(config, "luzx", -20, 20, 0.01).onChange(function () {
+    arrLuz[config.luzIndex].position.x = config.luzx;
+    arrLuz[config.luzIndex].position.y = config.luzy;
+    arrLuz[config.luzIndex].position.z = config.luzz;
+  });
+  folder_luz.add(config, "luzy", -20, 20, 0.01).onChange(function () {
+    arrLuz[config.luzIndex].position.x = config.luzx;
+    arrLuz[config.luzIndex].position.y = config.luzy;
+    arrLuz[config.luzIndex].position.z = config.luzz;
+  });
+  folder_luz.add(config, "luzz", -20, 200, 0.01).onChange(function () {
+    arrLuz[config.luzIndex].position.x = config.luzx;
+    arrLuz[config.luzIndex].position.y = config.luzy;
+    arrLuz[config.luzIndex].position.z = config.luzz;
+  });
+  folder_luz.add(config, "shininess", 0, 3000, 0.1);
   folder_camera
     .add(config, "camera_1")
     .listen()
@@ -276,6 +298,11 @@ const loadGUI = () => {
       cameraPosition = [4, 4, 35];
       gui.updateDisplay();
     });
-  gui.addColor(palette, "corLuz");
-  gui.addColor(palette, "corCubo");
+  folder_luz.addColor(palette, "corLuz").onChange(function () {
+    arrLuz[config.luzIndex].color = palette.corLuz;
+  });
+  folder_luz.addColor(palette, "corCubo");
+  folder_luz.addColor(palette, "corSpec").onChange(function () {
+    arrLuz[config.luzIndex].spec = palette.corSpec;
+  });
 };
