@@ -91,3 +91,26 @@ class Luz {
   //     return viewMatrix
   // }
 }
+
+const locura = () => {
+  //console.log(arrays_pyramid.texcoord);
+  var count = 0;
+  for (let i = 0; i < arrays_pyramid.position.length; i = i + 3) {
+    if (arrays_pyramid.normal[i] != 0) {
+      // se x diff de zero
+      arrays_pyramid.texcoord[count] = arrays_pyramid.position[i + 2];
+      arrays_pyramid.texcoord[count + 1] = arrays_pyramid.position[i + 1];
+    } else {
+      if (arrays_pyramid.normal[i + 1] != 0) {
+        // se y diff
+        arrays_pyramid.texcoord[count] = arrays_pyramid.position[i + 2];
+        arrays_pyramid.texcoord[count + 1] = arrays_pyramid.position[i];
+      } else {
+        arrays_pyramid.texcoord[count] = arrays_pyramid.position[i + 1];
+        arrays_pyramid.texcoord[count + 1] = arrays_pyramid.position[i];
+      }
+    }
+    count += 2;
+  }
+  //console.log(arrays_pyramid.texcoord);
+};

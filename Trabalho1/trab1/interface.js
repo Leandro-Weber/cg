@@ -86,6 +86,7 @@ var config = {
       arrays_pyramid.position,
       arrays_pyramid.indices
     );
+    locura();
     cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
 
     objectsToDraw = [];
@@ -97,7 +98,9 @@ var config = {
     gui = null;
   },
   //time: 0.0,
-  target: 3.5,
+  targetx: 0,
+  targety: 0,
+  targetz: 0,
   vx: 0,
   vy: 0,
   vz: 0,
@@ -127,7 +130,7 @@ const moveVertice = function () {
     arrays_pyramid.indices
   );
   var temp = mapVertices[n];
-  console.log(temp);
+  //console.log(temp);
 
   for (let index = 0; index < temp.length; index++) {
     arrays_pyramid.position[temp[index] * 3] = config.vx;
@@ -182,13 +185,13 @@ const loadGUI = () => {
   folder_matrix.add(config, "scalez", -10, 10, 0.1);
 
   gui.add(config, "addCaixa");
-  folder_camera.add(config, "camera_x", -200, 200, 0.5).onChange(function () {
+  folder_camera.add(config, "camera_x", -20, 20, 0.1).onChange(function () {
     cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
   });
-  folder_camera.add(config, "camera_y", -200, 200, 0.5).onChange(function () {
+  folder_camera.add(config, "camera_y", -20, 20, 0.1).onChange(function () {
     cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
   });
-  folder_camera.add(config, "camera_z", -200, 200, 0.5).onChange(function () {
+  folder_camera.add(config, "camera_z", -20, 20, 0.1).onChange(function () {
     cameraPosition = [config.camera_x, config.camera_y, config.camera_z];
   });
 
@@ -202,7 +205,9 @@ const loadGUI = () => {
 
   //     gui.updateDisplay();
   //   });
-  folder_camera.add(config, "target", -5, 5, 0.01);
+  folder_camera.add(config, "targetx", -10, 10, 0.01);
+  folder_camera.add(config, "targety", -10, 10, 0.01);
+  folder_camera.add(config, "targetz", -10, 10, 0.01);
 
   folder_vertice.add(config, "vertice", listOfVertices).onChange(function () {
     const temp = arrays_pyramid.position.slice(

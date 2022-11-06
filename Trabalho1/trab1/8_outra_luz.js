@@ -86,6 +86,7 @@ var palette = {
   corCubo: [255, 255, 255], // RGB array
   corSpec: [255, 255, 255], // RGB array
 };
+var tex;
 
 var arrLuz = [
   new Luz([4, 0, 0], [255, 255, 255], [255, 255, 255], 300),
@@ -111,6 +112,7 @@ function makeNode(nodeDescription) {
     node.drawInfo = {
       uniforms: {
         u_color: [0.4, 0.4, 0.4, 1],
+        u_texture: nodeDescription.texture,
       },
       programInfo: programInfo,
       bufferInfo: cubeBufferInfo,
@@ -138,6 +140,14 @@ function main() {
     return;
   }
 
+  tex = twgl.createTextures(gl, {
+    nitro: {
+      src: "http://127.0.0.1:5500/Trabalho1/trab1/texture/areia.jpg",
+    },
+  });
+  gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
+
   // loadGUI(gl);
 
   // Tell the twgl to match position with a_position, n
@@ -146,17 +156,17 @@ function main() {
 
   //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
   //console.log(arrays_cube5.position.reverse());
-  var buf = [];
-  for (let index = 0; index < arrays_cube5.position.length; index = index + 3) {
-    buf = [
-      arrays_cube5.position[index],
-      arrays_cube5.position[index + 1],
-      arrays_cube5.position[index + 2],
-      ...buf,
-    ];
-  }
-  console.log(`${buf}`);
-  arrays_pyramid = arrays_cube5;
+  // var buf = [];
+  // for (let index = 0; index < arrays_cube5.position.length; index = index + 3) {
+  //   buf = [
+  //     arrays_cube5.position[index],
+  //     arrays_cube5.position[index + 1],
+  //     arrays_cube5.position[index + 2],
+  //     ...buf,
+  //   ];
+  // }
+  //console.log(`${buf}`);
+  arrays_pyramid = arrays_cube6;
   //arrays_pyramid.position = buf;
 
   arrays_pyramid.barycentric = calculateBarycentric(
@@ -167,6 +177,10 @@ function main() {
     arrays_pyramid.position,
     arrays_pyramid.indices
   );
+
+  locura();
+  console.log("normal");
+  console.log(arrays_pyramid.normal);
 
   // normalComIndice();
   // normalSemIndice;
@@ -223,6 +237,7 @@ function main() {
         draw: true,
         translation: [0, 0, 0],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        texture: tex.nitro,
         //bufferInfo: cubeBufferInfo,
         //vertexArray: cubeVAO,
         children: [
@@ -231,6 +246,7 @@ function main() {
             draw: true,
             translation: [0, 0, 0],
             rotation: [degToRad(0), degToRad(0), degToRad(0)],
+            texture: tex.nitro,
             children: [],
           },
         ],
@@ -240,6 +256,7 @@ function main() {
         draw: true,
         translation: [config.luzx, config.luzy, config.luzz],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        texture: tex.nitro,
         children: [],
       },
       {
@@ -247,6 +264,7 @@ function main() {
         draw: true,
         translation: [[3, 0, 0]],
         rotation: [degToRad(0), degToRad(0), degToRad(0)],
+        texture: tex.nitro,
         children: [],
       },
     ],
@@ -310,7 +328,7 @@ function main() {
     ];
   });
   //temp = mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices);
-  console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
+  //console.log(mapAllVertices(arrays_pyramid.position, arrays_pyramid.indices));
   cameraPosition = [4, 4, 10];
 
   const temp = arrays_pyramid.position.slice(
@@ -322,12 +340,12 @@ function main() {
   config.vy = temp[1];
   config.vz = temp[2];
   requestAnimationFrame(drawScene);
-  console.log(objects);
+  //console.log(objects);
   // Draw the scene.
 }
 function drawScene(time) {
   time *= 0.001;
-
+  locura();
   twgl.resizeCanvasToDisplaySize(gl.canvas);
 
   listOfVertices = arrays_pyramid.indices;
@@ -345,7 +363,7 @@ function drawScene(time) {
   var projectionMatrix = m4.perspective(fieldOfViewRadians, aspect, 1, 200);
 
   // Compute the camera's matrix using look at.
-  target = [config.target, 0, 0];
+  target = [config.targetx, config.targety, config.targetz];
   up = [0, 1, 0];
   cameraMatrix = m4.lookAt(cameraPosition, target, up);
 

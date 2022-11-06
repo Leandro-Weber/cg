@@ -2,6 +2,7 @@ var vs3luz = `#version 300 es
 
 in vec4 a_position;
 in vec3 a_normal;
+in vec2 a_texcoord;
 
 uniform vec3 u_lightWorldPosition0;
 uniform vec3 u_viewWorldPosition;
@@ -20,6 +21,7 @@ out vec3 v_surfaceToLight1;
 out vec3 v_surfaceToView1;
 out vec3 v_surfaceToLight2;
 out vec3 v_surfaceToView2;
+out vec2 v_texcoord;
 
 void main() {
   // Multiply the position by the matrix.
@@ -35,6 +37,7 @@ void main() {
 
   v_surfaceToLight2 = u_lightWorldPosition2 - surfaceWorldPosition;
   v_surfaceToView2 = u_viewWorldPosition - surfaceWorldPosition;
+  v_texcoord = a_texcoord;
 }
 `;
 
@@ -49,6 +52,7 @@ in vec3 v_surfaceToLight1;
 in vec3 v_surfaceToView1;
 in vec3 v_surfaceToLight2;
 in vec3 v_surfaceToView2;
+in vec2 v_texcoord;
 
 uniform vec4 u_color;
 uniform float u_shininess;
@@ -61,6 +65,8 @@ uniform vec3 u_specularColor1;
 
 uniform vec3 u_lightColor2;
 uniform vec3 u_specularColor2;
+
+uniform sampler2D u_texture;
 
 out vec4 outColor;
 
@@ -88,7 +94,7 @@ void main() {
   float specular1 = 0.0;
   float specular2 = 0.0;
 
-  outColor = u_color;
+  outColor = texture(u_texture, v_texcoord);
   vec3 color0;
   vec3 color1;
   vec3 color2;
