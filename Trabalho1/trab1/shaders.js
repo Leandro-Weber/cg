@@ -54,7 +54,6 @@ in vec3 v_surfaceToLight2;
 in vec3 v_surfaceToView2;
 in vec2 v_texcoord;
 
-uniform vec4 u_color;
 uniform float u_shininess;
 
 uniform vec3 u_lightColor0;
