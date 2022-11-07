@@ -30,19 +30,125 @@ var config = {
   },
   triangulo: 0,
 
+  // criarVertice: function () {
+  //   // console.log(`indices antes: ${arrays_pyramid.indices}`);
+  //   // console.log(`arrays_pyramid.position antes: ${arrays_pyramid.position}`);
+  //   var n = config.triangulo * 3;
+  //   var inicio = arrays_pyramid.position.slice(0, n * 3);
+  //   var temp = arrays_pyramid.position.slice(n * 3, (n + 3) * 3);
+  //   var resto = arrays_pyramid.position.slice(
+  //     (n + 3) * 3,
+  //     arrays_pyramid.position.length
+  //   );
+  //   var newind = [];
+  //   //arrays_pyramid.position = [...inicio, ...resto];
+  //   arrays_pyramid.position = [...inicio];
+
+  //   var a = temp.slice(0, 3);
+  //   var b = temp.slice(3, 6);
+  //   var c = temp.slice(6, 9);
+  //   var d = calculaMeioDoTriangulo([...a, ...b, ...c]);
+
+  //   var nTex = config.triangulo * 2;
+  //   var inicioTex = arrays_pyramid.texcoord.slice(0, nTex * 2);
+  //   var tempTex = arrays_pyramid.texcoord.slice(nTex * 2, (nTex + 3) * 2);
+  //   var restoTex = arrays_pyramid.texcoord.slice(
+  //     (nTex + 3) * 2,
+  //     arrays_pyramid.texcoord.length
+  //   );
+  //   var at = tempTex.slice(0, 2);
+  //   var bt = tempTex.slice(2, 4);
+  //   var ct = tempTex.slice(4, 6);
+  //   var dt = calculaMeioDaTextura([...at, ...bt, ...ct]);
+  //   //arrays_pyramid.texcoord = [...inicioTex, ...restoTex];
+  //   //console.log(`dt: ${dt}`);
+  //   arrays_pyramid.texcoord = [...inicioTex];
+
+  //   // arrays_pyramid.position = new Float32Array([
+  //   //   ...arrays_pyramid.position,
+  //   //   ...d,
+  //   // ]);
+  //   // console.log(`arrays_pyramid.position: ${arrays_pyramid.position}`);
+
+  //   // var novotri = [...a, ...d, ...b];
+  //   var novotri = [...b, ...d, ...a];
+  //   var novatexcoord = [...bt, ...dt, ...at];
+
+  //   console.log(`novotri: ${novotri}`);
+  //   arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
+  //   arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+
+  //   // novotri = [...b, ...d, ...c];
+  //   novotri = [...c, ...d, ...b];
+  //   novatexcoord = [...ct, ...dt, ...bt];
+
+  //   console.log(`novotri: ${novotri}`);
+  //   arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
+  //   arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+
+  //   // novotri = [...c, ...d, ...a];
+  //   novotri = [...a, ...d, ...c];
+  //   novatexcoord = [...ct, ...dt, ...bt];
+
+  //   console.log(`novotri: ${novotri}`);
+  //   arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
+  //   arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+
+  //   arrays_pyramid.position = [...arrays_pyramid.position, ...resto];
+  //   arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...restoTex];
+
+  //   console.log(`position depois dos triangulos: ${arrays_pyramid.position}`);
+  //   console.log(arrays_pyramid.position.length);
+
+  //   for (let index = 0; index < arrays_pyramid.position.length / 3; index++) {
+  //     newind = [...newind, index];
+  //   }
+  //   arrays_pyramid.indices = newind;
+
+  //   console.log(`indices: ${arrays_pyramid.indices}`);
+
+  //   // console.log(`arrays_pyramid.position: ${arrays_pyramid.position}`);
+
+  //   arrays_pyramid.normal = [];
+  //   for (let index = 0; index < arrays_pyramid.normal.length; index++) {
+  //     arrays_pyramid.normal = [...arrays_pyramid.normal, 0];
+  //   }
+  //   arrays_pyramid.normal = calculateNormal(
+  //     arrays_pyramid.position,
+  //     arrays_pyramid.indices
+  //   );
+  //   //mapTexture();
+  //   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+  //   objectsToDraw = [];
+  //   objects = [];
+  //   nodeInfosByName = {};
+  //   scene = makeNode(objeto);
+  //   objects.forEach(function (object) {
+  //     object.drawInfo.uniforms.u_texture = tex[config.textura];
+  //   });
+
+  //   gui.destroy();
+  //   gui = null;
+  // },
   criarVertice: function () {
     // console.log(`indices antes: ${arrays_pyramid.indices}`);
     // console.log(`arrays_pyramid.position antes: ${arrays_pyramid.position}`);
     var n = config.triangulo * 3;
-    var inicio = arrays_pyramid.position.slice(0, n * 3);
-    var temp = arrays_pyramid.position.slice(n * 3, (n + 3) * 3);
-    var resto = arrays_pyramid.position.slice(
+    var inicio = nodeInfosByName[
+      `${selectedObject}`
+    ].format.position.data.slice(0, n * 3);
+    var temp = nodeInfosByName[`${selectedObject}`].format.position.data.slice(
+      n * 3,
+      (n + 3) * 3
+    );
+    var resto = nodeInfosByName[`${selectedObject}`].format.position.data.slice(
       (n + 3) * 3,
-      arrays_pyramid.position.length
+      nodeInfosByName[`${selectedObject}`].format.position.data.length
     );
     var newind = [];
     //arrays_pyramid.position = [...inicio, ...resto];
-    arrays_pyramid.position = [...inicio];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [...inicio];
 
     var a = temp.slice(0, 3);
     var b = temp.slice(3, 6);
@@ -50,11 +156,17 @@ var config = {
     var d = calculaMeioDoTriangulo([...a, ...b, ...c]);
 
     var nTex = config.triangulo * 2;
-    var inicioTex = arrays_pyramid.texcoord.slice(0, nTex * 2);
-    var tempTex = arrays_pyramid.texcoord.slice(nTex * 2, (nTex + 3) * 2);
-    var restoTex = arrays_pyramid.texcoord.slice(
+    var inicioTex = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(0, nTex * 2);
+    var tempTex = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(nTex * 2, (nTex + 3) * 2);
+    var restoTex = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(
       (nTex + 3) * 2,
-      arrays_pyramid.texcoord.length
+      nodeInfosByName[`${selectedObject}`].format.texcoord.data.length
     );
     var at = tempTex.slice(0, 2);
     var bt = tempTex.slice(2, 4);
@@ -62,7 +174,7 @@ var config = {
     var dt = calculaMeioDaTextura([...at, ...bt, ...ct]);
     //arrays_pyramid.texcoord = [...inicioTex, ...restoTex];
     //console.log(`dt: ${dt}`);
-    arrays_pyramid.texcoord = [...inicioTex];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [...inicioTex];
 
     // arrays_pyramid.position = new Float32Array([
     //   ...arrays_pyramid.position,
@@ -75,50 +187,94 @@ var config = {
     var novatexcoord = [...bt, ...dt, ...at];
 
     console.log(`novotri: ${novotri}`);
-    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...novotri,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...novatexcoord,
+    ];
 
     // novotri = [...b, ...d, ...c];
     novotri = [...c, ...d, ...b];
     novatexcoord = [...ct, ...dt, ...bt];
 
     console.log(`novotri: ${novotri}`);
-    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...novotri,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...novatexcoord,
+    ];
 
     // novotri = [...c, ...d, ...a];
     novotri = [...a, ...d, ...c];
     novatexcoord = [...ct, ...dt, ...bt];
 
     console.log(`novotri: ${novotri}`);
-    arrays_pyramid.position = [...arrays_pyramid.position, ...novotri];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...novatexcoord];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...novotri,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...novatexcoord,
+    ];
 
-    arrays_pyramid.position = [...arrays_pyramid.position, ...resto];
-    arrays_pyramid.texcoord = [...arrays_pyramid.texcoord, ...restoTex];
+    nodeInfosByName[`${selectedObject}`].format.position.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.position.data,
+      ...resto,
+    ];
+    nodeInfosByName[`${selectedObject}`].format.texcoord.data = [
+      ...nodeInfosByName[`${selectedObject}`].format.texcoord.data,
+      ...restoTex,
+    ];
 
-    console.log(`position depois dos triangulos: ${arrays_pyramid.position}`);
-    console.log(arrays_pyramid.position.length);
+    console.log(
+      `position depois dos triangulos: ${
+        nodeInfosByName[`${selectedObject}`].format.position.data
+      }`
+    );
+    //console.log(arrays_pyramid.position.length);
 
-    for (let index = 0; index < arrays_pyramid.position.length / 3; index++) {
+    for (
+      let index = 0;
+      index <
+      nodeInfosByName[`${selectedObject}`].format.position.data.length / 3;
+      index++
+    ) {
       newind = [...newind, index];
     }
-    arrays_pyramid.indices = newind;
+    nodeInfosByName[`${selectedObject}`].format.indices.data = newind;
 
-    console.log(`indices: ${arrays_pyramid.indices}`);
+    //console.log(`indices: ${arrays_pyramid.indices}`);
 
     // console.log(`arrays_pyramid.position: ${arrays_pyramid.position}`);
 
-    arrays_pyramid.normal = [];
-    for (let index = 0; index < arrays_pyramid.normal.length; index++) {
-      arrays_pyramid.normal = [...arrays_pyramid.normal, 0];
+    nodeInfosByName[`${selectedObject}`].format.normal.data = [];
+    for (
+      let index = 0;
+      index < nodeInfosByName[`${selectedObject}`].format.normal.data;
+      index++
+    ) {
+      nodeInfosByName[`${selectedObject}`].format.normal.data = [
+        ...nodeInfosByName[`${selectedObject}`].format.normal.data,
+        0,
+      ];
     }
-    arrays_pyramid.normal = calculateNormal(
-      arrays_pyramid.position,
-      arrays_pyramid.indices
+    nodeInfosByName[`${selectedObject}`].format.normal.data = calculateNormal(
+      nodeInfosByName[`${selectedObject}`].format.position.data,
+      nodeInfosByName[`${selectedObject}`].format.indices.data
     );
     //mapTexture();
-    cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+    nodeInfosByName[`${selectedObject}`].node.drawInfo.bufferInfo =
+      twgl.createBufferInfoFromArrays(
+        gl,
+        nodeInfosByName[`${selectedObject}`].format
+      );
 
     objectsToDraw = [];
     objects = [];
@@ -127,6 +283,16 @@ var config = {
     objects.forEach(function (object) {
       object.drawInfo.uniforms.u_texture = tex[config.textura];
     });
+
+    listOfVertices = [];
+    for (
+      let index = 0;
+      index <
+      nodeInfosByName[`${selectedObject}`].format.position.data.length / 3;
+      index++
+    ) {
+      listOfVertices = [...listOfVertices, index];
+    }
 
     gui.destroy();
     gui = null;
@@ -299,10 +465,9 @@ const loadGUI = () => {
   });
 
   folder_vertice.add(config, "vertice", listOfVertices).onChange(function () {
-    const temp = arrays_pyramid.position.slice(
-      config.vertice * 3,
-      config.vertice * 3 + 3
-    );
+    const temp = nodeInfosByName[
+      `${selectedObject}`
+    ].format.position.data.slice(config.vertice * 3, config.vertice * 3 + 3);
 
     config.vx = temp[0];
     config.vy = temp[1];
