@@ -21,9 +21,9 @@ var config = {
     objects = [];
     nodeInfosByName = {};
     scene = makeNode(objeto);
-    objects.forEach(function (object) {
-      object.drawInfo.uniforms.u_texture = tex[config.textura];
-    });
+    // objects.forEach(function (object) {
+    //   object.drawInfo.uniforms.u_texture = tex[config.textura];
+    // });
   },
   addCuboMadeira: function () {
     addCubo();
@@ -280,9 +280,9 @@ var config = {
     objects = [];
     nodeInfosByName = {};
     scene = makeNode(objeto);
-    objects.forEach(function (object) {
-      object.drawInfo.uniforms.u_texture = tex[config.textura];
-    });
+    // objects.forEach(function (object) {
+    //   object.drawInfo.uniforms.u_texture = tex[config.textura];
+    // });
 
     listOfVertices = [];
     for (
@@ -349,34 +349,27 @@ const loadGUI = () => {
   folder_matrix = gui.addFolder("Manipular matrizes");
   folder_triangulo = folder_vertice.addFolder("Manipular triangulos");
   folder_coordTex = folder_luz.addFolder("Coordenadas textura");
-  folder_luz.open();
-  folder_matrix
-    .add(config, "rotate", 0, 360, 0.5)
-    .listen()
-    .onChange(function () {
-      nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
-      // A ANIMACAO DE GIRAR SOBREPOE ESSA ALTERACAO TODA VEZ Q RENDERIZA
-      // TEM Q USAR OU UM OU OUTRO
-    });
+  folder_matrix.open();
+
   folder_matrix.add(config, "x", -10, 10, 0.5);
   folder_matrix.add(config, "y", -10, 10, 0.5);
   folder_matrix.add(config, "z", -10, 10, 0.5);
 
-  folder_matrix.add(config, "spin_x", -1000, 1000, 2);
-  folder_matrix.add(config, "spin_y", -1000, 1000, 2);
+  folder_matrix.add(config, "spin_x", -400, 400, 0.1);
+  folder_matrix.add(config, "spin_y", -400, 400, 0.1);
 
   folder_matrix.add(config, "scalex", -10, 10, 0.1);
   folder_matrix.add(config, "scaley", -10, 10, 0.1);
   folder_matrix.add(config, "scalez", -10, 10, 0.1);
 
   // gui.add(config, "addCaixa");
-  // folder_camera.add(config, "camera_x", -20, 20, 0.1).onChange(function () {
-  //   arrCameras[selectedCamera].cameraPosition = [
-  //     config.camera_x,
-  //     config.camera_y,
-  //     config.camera_z,
-  //   ];
-  // });
+  folder_camera.add(config, "camera_x", -20, 20, 0.1).onChange(function () {
+    arrCameras[selectedCamera].cameraPosition = [
+      config.camera_x,
+      config.camera_y,
+      config.camera_z,
+    ];
+  });
   folder_camera.add(config, "camera_y", -20, 20, 0.1).onChange(function () {
     arrCameras[selectedCamera].cameraPosition = [
       config.camera_x,
@@ -619,9 +612,12 @@ const loadGUI = () => {
       gui.updateDisplay();
     });
   folder_luz.add(config, "textura", listTex).onChange(function () {
-    objects.forEach(function (object) {
-      object.drawInfo.uniforms.u_texture = tex[config.textura];
-    });
+    nodeInfosByName[`${selectedObject}`].node.drawInfo.uniforms.u_texture =
+      tex[config.textura];
+    objeto.children[`${selectedObject}`].texture = tex[config.textura];
+    // objects.forEach(function (object) {
+    //   object.drawInfo.uniforms.u_texture = tex[config.textura];
+    // });
   });
   folder_luz.addColor(palette, "corLuz").onChange(function () {
     arrLuz[config.luzIndex].color = palette.corLuz;
@@ -631,7 +627,9 @@ const loadGUI = () => {
     arrLuz[config.luzIndex].spec = palette.corSpec;
   });
   gui.add(config, "obj", listOfObjects).onChange(function () {
+    console.log(nodeInfosByName[`${selectedObject}`]);
     selectedObject = config.obj;
+
     config.scalex = nodeInfosByName[`${selectedObject}`].trs.scale[0];
     config.scaley = nodeInfosByName[`${selectedObject}`].trs.scale[1];
     config.scalez = nodeInfosByName[`${selectedObject}`].trs.scale[2];
@@ -641,8 +639,10 @@ const loadGUI = () => {
     config.spin_x = nodeInfosByName[`${selectedObject}`].trs.rotation[0];
     config.spin_y = nodeInfosByName[`${selectedObject}`].trs.rotation[1];
 
-    gui.destroy();
-    gui = null;
+    console.log(nodeInfosByName[`${selectedObject}`]);
+    gui.updateDisplay();
+    // gui.destroy();
+    // gui = null;
   });
   gui.add(config, "addCuboMadeira");
 };

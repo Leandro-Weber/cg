@@ -49,9 +49,9 @@ var arrLuz = [
   new Luz([5, 4, 8], [255, 255, 255], [255, 255, 255], 300),
 ];
 let arrCameras = [
-  new Camera([10, 4, 0], [0, 0, 0], [0, 1, 0]),
-  new Camera([-5, 4, 0], [3.5, -23.5, 50.5], [0, 1, 0]),
-  new Camera([5, 4, 8], [0, 35, 0], [0, 1, 0]),
+  new Camera([3, 4, 5], [0, 0, 0], [0, 1, 0]),
+  new Camera([3, 4, 20], [3.5, -3.5, 0.5], [0, 1, 0]),
+  new Camera([5, 4, 8], [2, 5, 0], [0, 1, 0]),
 ];
 
 //CAMERA VARIABLES
@@ -141,18 +141,6 @@ function main() {
   // normal with a_normal etc..
   twgl.setAttributePrefix("a_");
 
-  //cubeBufferInfo = flattenedPrimitives.createCubeBufferInfo(gl, 1);
-  //console.log(arrays_cube5.position.reverse());
-  // var buf = [];
-  // for (let index = 0; index < arrays_cube5.position.length; index = index + 3) {
-  //   buf = [
-  //     arrays_cube5.position[index],
-  //     arrays_cube5.position[index + 1],
-  //     arrays_cube5.position[index + 2],
-  //     ...buf,
-  //   ];
-  // }
-  //console.log(`${buf}`);
   arrays_pyramid = arrays_cube6;
   // arrays_pyramid = pyramidFormat;
 
@@ -170,8 +158,6 @@ function main() {
   console.log("normal");
   console.log(arrays_pyramid.normal);
 
-  // normalComIndice();
-  // normalSemIndice;
   // As posicoes do arrays_cube tao erradas, sem o CULL_FACES e sem os indices ta ruim
 
   // console.log("a");
@@ -231,17 +217,7 @@ function main() {
         format: arrayCube,
         //bufferInfo: cubeBufferInfo,
         //vertexArray: cubeVAO,
-        children: [
-          {
-            name: "cuboVertice0",
-            draw: true,
-            translation: [0, 0, 0],
-            rotation: [degToRad(0), degToRad(0), degToRad(0)],
-            texture: tex.nitro,
-            format: arrayCube,
-            children: [],
-          },
-        ],
+        children: [],
       },
     ],
   };
@@ -350,23 +326,10 @@ function drawScene(now) {
 
   viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
-  var fRotationRadians = degToRad(config.spin_x);
-
-  adjust;
-  speed = 3;
-
-  //console.log(nodeInfosByName);
   computeMatrix(nodeInfosByName[`${selectedObject}`], config);
-  // computeMatrixLuz(nodeInfosByName["light1"], config);
-  // computeMatrixLuz2(nodeInfosByName["light2"], config);
-  //computeMatrixCuboVertice(nodeInfosByName["cuboVertice0"], config);
-  //nodeInfosByName
 
-  //nodeInfosByName["cubo0"].trs.rotation[0] = degToRad(config.rotate);
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();
-  //console.log(arrLuz[0].position);
-  //console.log(cameraPosition);
 
   // Compute all the matrices for rendering
   objects.forEach(function (object) {
@@ -446,7 +409,7 @@ function drawScene(now) {
 
     object.drawInfo.uniforms.u_shininess = config.shininess;
 
-    object.drawInfo.uniforms.u_texture = tex[config.textura];
+    //object.drawInfo.uniforms.u_texture = tex[config.textura];
   });
 
   // ------ Draw the objects --------

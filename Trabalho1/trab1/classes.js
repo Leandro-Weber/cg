@@ -37,12 +37,4 @@ class Luz {
 
     this.shine = shine;
   }
-
-  // computeMatrix() {
-  //     let cameraMatrix = m4.lookAt(convertObjectToArray(this.cameraPosition), convertObjectToArray(this.target), this.up)
-
-  //     let viewMatrix = m4.inverse(cameraMatrix);
-
-  //     return viewMatrix
-  // }
 }

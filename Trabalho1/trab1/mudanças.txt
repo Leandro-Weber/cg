@@ -1,0 +1,13 @@
+- Arrumei a movimentação do triângulo
+
+- Arrumei a posição onde o novo objeto é criado.
+
+- Removi um child do objeto "0" (esse objeto nao fazia nada)
+
+- Objetos podem possuir textura independente.
+
+- Removi um item não utilizado da interface.
+
+- Readicionei na interface o camera_x (estava comentado por algum motivo desconhecido)
+
+- Ajustei os valores iniciais das câmeras.

@@ -236,8 +236,8 @@ const moveVertice = function () {
 const moveTriangulo = function () {
   var n = config.triangulo;
   var mapVertices = mapAllVertices(
-    arrays_pyramid.position,
-    arrays_pyramid.indices
+    nodeInfosByName[`${selectedObject}`].format.position.data,
+    nodeInfosByName[`${selectedObject}`].format.indices.data
   );
   var temp = [
     ...mapVertices[n * 3],
@@ -248,16 +248,26 @@ const moveTriangulo = function () {
   temp = [...new Set(temp)];
 
   for (let index = 0; index < temp.length; index++) {
-    arrays_pyramid.position[temp[index] * 3] += config.tx;
-    arrays_pyramid.position[temp[index] * 3 + 1] += config.ty;
-    arrays_pyramid.position[temp[index] * 3 + 2] += config.tz;
+    nodeInfosByName[`${selectedObject}`].format.position.data[
+      temp[index] * 3
+    ] += config.tx;
+    nodeInfosByName[`${selectedObject}`].format.position.data[
+      temp[index] * 3 + 1
+    ] += config.ty;
+    nodeInfosByName[`${selectedObject}`].format.position.data[
+      temp[index] * 3 + 2
+    ] += config.tz;
   }
 
   arrays_pyramid.normal = calculateNormal(
-    arrays_pyramid.position,
-    arrays_pyramid.indices
+    nodeInfosByName[`${selectedObject}`].format.position.data,
+    nodeInfosByName[`${selectedObject}`].format.indices.data
   );
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+  nodeInfosByName[`${selectedObject}`].node.drawInfo.bufferInfo =
+    twgl.createBufferInfoFromArrays(
+      gl,
+      nodeInfosByName[`${selectedObject}`].format
+    );
 
   objectsToDraw = [];
   objects = [];
@@ -267,6 +277,41 @@ const moveTriangulo = function () {
     object.drawInfo.uniforms.u_texture = tex[config.textura];
   });
 };
+
+// const moveTriangulo = function () {
+//   var n = config.triangulo;
+//   var mapVertices = mapAllVertices(
+//     arrays_pyramid.position,
+//     arrays_pyramid.indices
+//   );
+//   var temp = [
+//     ...mapVertices[n * 3],
+//     ...mapVertices[n * 3 + 3],
+//     ...mapVertices[n * 3 + 6],
+//   ];
+
+//   temp = [...new Set(temp)];
+
+//   for (let index = 0; index < temp.length; index++) {
+//     arrays_pyramid.position[temp[index] * 3] += config.tx;
+//     arrays_pyramid.position[temp[index] * 3 + 1] += config.ty;
+//     arrays_pyramid.position[temp[index] * 3 + 2] += config.tz;
+//   }
+
+//   arrays_pyramid.normal = calculateNormal(
+//     arrays_pyramid.position,
+//     arrays_pyramid.indices
+//   );
+//   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+//   objectsToDraw = [];
+//   objects = [];
+//   nodeInfosByName = {};
+//   scene = makeNode(objeto);
+//   objects.forEach(function (object) {
+//     object.drawInfo.uniforms.u_texture = tex[config.textura];
+//   });
+// };
 
 const changeTexCoord = function () {
   var n = config.vertice2;
@@ -291,9 +336,9 @@ const changeTexCoord = function () {
   nodeInfosByName = {};
 
   scene = makeNode(objeto);
-  objects.forEach(function (object) {
-    object.drawInfo.uniforms.u_texture = tex[config.textura];
-  });
+  // objects.forEach(function (object) {
+  //   object.drawInfo.uniforms.u_texture = tex[config.textura];
+  // });
 };
 
 const createArray = (type) => {
@@ -334,19 +379,21 @@ function addCubo() {
     name: `${index}`,
     draw: true,
     type: "cube",
-    translation: [0, 0, 90],
+    translation: [0, 0, 0],
     rotation: [degToRad(0), degToRad(0), degToRad(0)],
     format: newArray,
     texture: tex.madeira,
     children: [],
   });
-  console.log(nodeInfosByName);
+  //console.log(nodeInfosByName);
   objectsToDraw = [];
   objects = [];
   nodeInfosByName = {};
 
   scene = makeNode(objeto);
-  console.log(nodeInfosByName);
+  //console.log(nodeInfosByName);
+  // console.log("wewwrw");
+  // console.log(objeto.children["0"]);
 
   listOfObjects.push(`${index}`);
 
