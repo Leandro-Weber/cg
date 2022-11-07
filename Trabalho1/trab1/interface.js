@@ -550,10 +550,9 @@ const loadGUI = () => {
     });
 
   folder_coordTex.add(config, "vertice2", listOfVertices).onChange(function () {
-    const temp = arrays_pyramid.texcoord.slice(
-      config.vertice2 * 2,
-      config.vertice2 * 2 + 2
-    );
+    const temp = nodeInfosByName[
+      `${selectedObject}`
+    ].format.texcoord.data.slice(config.vertice2 * 2, config.vertice2 * 2 + 2);
     config.coordu = temp[0];
     config.coordv = temp[1];
     gui.updateDisplay();
