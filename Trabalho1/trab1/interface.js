@@ -203,14 +203,14 @@ const loadGUI = () => {
   folder_matrix.add(config, "scaley", -10, 10, 0.1);
   folder_matrix.add(config, "scalez", -10, 10, 0.1);
 
-  gui.add(config, "addCaixa");
-  folder_camera.add(config, "camera_x", -20, 20, 0.1).onChange(function () {
-    arrCameras[selectedCamera].cameraPosition = [
-      config.camera_x,
-      config.camera_y,
-      config.camera_z,
-    ];
-  });
+  // gui.add(config, "addCaixa");
+  // folder_camera.add(config, "camera_x", -20, 20, 0.1).onChange(function () {
+  //   arrCameras[selectedCamera].cameraPosition = [
+  //     config.camera_x,
+  //     config.camera_y,
+  //     config.camera_z,
+  //   ];
+  // });
   folder_camera.add(config, "camera_y", -20, 20, 0.1).onChange(function () {
     arrCameras[selectedCamera].cameraPosition = [
       config.camera_x,
