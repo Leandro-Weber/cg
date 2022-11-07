@@ -161,25 +161,66 @@ const mapTexture = () => {
   //console.log(arrays_pyramid.texcoord);
 };
 
+// const moveVertice = function () {
+//   var n = config.vertice;
+//   var mapVertices = mapAllVertices(
+//     arrays_pyramid.position,
+//     arrays_pyramid.indices
+//   );
+//   var temp = mapVertices[n];
+
+//   for (let index = 0; index < temp.length; index++) {
+//     arrays_pyramid.position[temp[index] * 3] = config.vx;
+//     arrays_pyramid.position[temp[index] * 3 + 1] = config.vy;
+//     arrays_pyramid.position[temp[index] * 3 + 2] = config.vz;
+//   }
+
+//   arrays_pyramid.normal = calculateNormal(
+//     arrays_pyramid.position,
+//     arrays_pyramid.indices
+//   );
+//   cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+
+//   objectsToDraw = [];
+//   objects = [];
+//   nodeInfosByName = {};
+//   //objeto.children.texture = tex[config.textura];
+//   //console.log(objeto);
+//   scene = makeNode(objeto);
+//   objects.forEach(function (object) {
+//     object.drawInfo.uniforms.u_texture = tex[config.textura];
+//   });
+// };
+
 const moveVertice = function () {
   var n = config.vertice;
   var mapVertices = mapAllVertices(
-    arrays_pyramid.position,
-    arrays_pyramid.indices
+    nodeInfosByName[`${selectedObject}`].format.position.data,
+    nodeInfosByName[`${selectedObject}`].format.indices.data
   );
   var temp = mapVertices[n];
 
   for (let index = 0; index < temp.length; index++) {
-    arrays_pyramid.position[temp[index] * 3] = config.vx;
-    arrays_pyramid.position[temp[index] * 3 + 1] = config.vy;
-    arrays_pyramid.position[temp[index] * 3 + 2] = config.vz;
+    nodeInfosByName[`${selectedObject}`].format.position.data[temp[index] * 3] =
+      config.vx;
+    nodeInfosByName[`${selectedObject}`].format.position.data[
+      temp[index] * 3 + 1
+    ] = config.vy;
+    nodeInfosByName[`${selectedObject}`].format.position.data[
+      temp[index] * 3 + 2
+    ] = config.vz;
   }
 
-  arrays_pyramid.normal = calculateNormal(
-    arrays_pyramid.position,
-    arrays_pyramid.indices
+  nodeInfosByName[`${selectedObject}`].format.normal.data = calculateNormal(
+    nodeInfosByName[`${selectedObject}`].format.position.data,
+    nodeInfosByName[`${selectedObject}`].format.indices.data
   );
-  cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, arrays_pyramid);
+  // cubeBufferInfo = twgl.createBufferInfoFromArrays(gl, nodeInfosByName[`${selectedObject}`].format);
+  nodeInfosByName[`${selectedObject}`].node.drawInfo.bufferInfo =
+    twgl.createBufferInfoFromArrays(
+      gl,
+      nodeInfosByName[`${selectedObject}`].format
+    );
 
   objectsToDraw = [];
   objects = [];
