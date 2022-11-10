@@ -11,3 +11,5 @@
 - Readicionei na interface o camera_x (estava comentado por algum motivo desconhecido)
 
 - Ajustei os valores iniciais das câmeras.
+
+- Arrumei a nova coordenada interpolada de textura.

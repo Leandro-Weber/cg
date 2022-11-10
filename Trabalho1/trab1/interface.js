@@ -155,7 +155,7 @@ var config = {
     var c = temp.slice(6, 9);
     var d = calculaMeioDoTriangulo([...a, ...b, ...c]);
 
-    var nTex = config.triangulo * 2;
+    var nTex = config.triangulo * 3;
     var inicioTex = nodeInfosByName[
       `${selectedObject}`
     ].format.texcoord.data.slice(0, nTex * 2);
@@ -212,7 +212,7 @@ var config = {
 
     // novotri = [...c, ...d, ...a];
     novotri = [...a, ...d, ...c];
-    novatexcoord = [...ct, ...dt, ...bt];
+    novatexcoord = [...at, ...dt, ...ct];
 
     console.log(`novotri: ${novotri}`);
     nodeInfosByName[`${selectedObject}`].format.position.data = [

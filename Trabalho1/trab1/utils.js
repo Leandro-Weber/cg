@@ -228,9 +228,9 @@ const moveVertice = function () {
   //objeto.children.texture = tex[config.textura];
   //console.log(objeto);
   scene = makeNode(objeto);
-  objects.forEach(function (object) {
-    object.drawInfo.uniforms.u_texture = tex[config.textura];
-  });
+  // objects.forEach(function (object) {
+  //   object.drawInfo.uniforms.u_texture = tex[config.textura];
+  // });
 };
 
 const moveTriangulo = function () {

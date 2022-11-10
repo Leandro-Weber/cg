@@ -67,6 +67,7 @@ function makeNode(nodeDescription) {
     node: node,
     format: nodeDescription.format,
   };
+  // console.log(nodeDescription.name + nodeDescription.rotation);
   trs.translation = nodeDescription.translation || trs.translation;
   trs.rotation = nodeDescription.rotation || trs.rotation;
   if (nodeDescription.draw !== false) {
@@ -114,22 +115,22 @@ function main() {
 
   tex = twgl.createTextures(gl, {
     nitro: {
-      src: "http://127.0.0.1:5500/Trabalho1/trab1/texture/nitro.png",
+      src: "http://127.0.0.1:5500/trab1/texture/nitro.png",
     },
     areia: {
-      src: "http://127.0.0.1:5500/Trabalho1/trab1/texture/areia.jpg",
+      src: "http://127.0.0.1:5500/trab1/texture/areia.jpg",
     },
     isopor: {
-      src: "http://127.0.0.1:5500/Trabalho1/trab1/texture/isopor.jpg  ",
+      src: "http://127.0.0.1:5500/trab1/texture/isopor.jpg  ",
     },
     madeira: {
-      src: "http://127.0.0.1:5500/Trabalho1/trab1/texture/madeira.jpg",
+      src: "http://127.0.0.1:5500/trab1/texture/madeira.jpg",
     },
     tri: {
-      src: "http://127.0.0.1:5500/Trabalho1/trab1/texture/tri.jpg",
+      src: "http://127.0.0.1:5500/trab1/texture/tri.jpg",
     },
     d4: {
-      src: "http://127.0.0.1:5500/Trabalho1/trab1/texture/d4.jpg",
+      src: "http://127.0.0.1:5500/trab1/texture/d4.jpg",
     },
   });
   gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.MIRRORED_REPEAT);
@@ -221,9 +222,9 @@ function main() {
       },
     ],
   };
-  console.log(objeto);
+  //console.log(objeto);
   scene = makeNode(objeto);
-  console.log(objectsToDraw);
+  //console.log(objectsToDraw);
 
   objects.forEach(function (object) {
     object.drawInfo.uniforms.u_lightWorldPosition0 = [
@@ -327,7 +328,8 @@ function drawScene(now) {
   viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
   computeMatrix(nodeInfosByName[`${selectedObject}`], config);
-
+  // console.log(nodeInfosByName[`${selectedObject}`]);
+  //console.log(objeto);
   // Update all world matrices in the scene graph
   scene.updateWorldMatrix();
 
